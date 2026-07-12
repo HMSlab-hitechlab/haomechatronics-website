@@ -84,22 +84,24 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
+    width: auto;
+    height: auto;
+    padding: 3px 0;
     border: 0;
     border-radius: 0;
     color: #52525b;
     background: transparent;
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 600;
+    letter-spacing: .02em;
     transition: .2s ease;
-    flex: 0 0 24px;
+    flex: 0 0 auto;
     overflow: hidden;
 }
 
 .contact-link:hover {
-    transform: translateY(-2px) scale(1.08);
+    transform: none;
+    color: #ea580c;
     box-shadow: none;
 }
 
@@ -110,19 +112,10 @@
     flex: 0 0 auto;
 }
 
-.contact-link.zalo {
-    background: transparent;
-}
-
-.contact-link.zalo svg {
-    width: 21px;
-    height: 21px;
-    min-width: 21px;
-}
-
-.contact-link.gmail svg {
-    width: 21px;
-    min-width: 21px;
+.contact-link + .contact-link::before {
+    content: "·";
+    margin-right: 8px;
+    color: #d4d4d8;
 }
 
 /* Native cursor is clearer around compact footer icons. */
