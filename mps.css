@@ -94,6 +94,8 @@
     font-size: 9px;
     font-weight: 600;
     transition: .2s ease;
+    flex: 0 0 38px;
+    overflow: hidden;
 }
 
 .contact-link:hover {
@@ -106,6 +108,7 @@
     display: block;
     width: 24px;
     height: 24px;
+    flex: 0 0 auto;
 }
 
 .contact-link.zalo {
@@ -116,10 +119,17 @@
 .contact-link.zalo svg {
     width: 28px;
     height: 28px;
+    min-width: 28px;
 }
 
 .contact-link.gmail svg {
     width: 25px;
+    min-width: 25px;
+}
+
+/* Native cursor is clearer around compact footer icons. */
+.studio-cursor {
+    display: none !important;
 }
 
 .footer-copyright {
