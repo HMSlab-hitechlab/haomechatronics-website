@@ -3,99 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hitech Lab - Phòng nghiên cứu Cơ điện tử, Robot và Tự động hóa.">
+    <meta name="description" content="Hitech Lab - Nghiên cứu Cơ điện tử, Robot và Tự động hóa.">
     <title>Hitech Lab | Mechatronics & Robotics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
-    <!-- Versioned assets prevent GitHub Pages/custom-domain cache mismatch. -->
-    <link rel="stylesheet" href="./style.css?v=20260712.3">
-    <link rel="stylesheet" href="./enhancements.css?v=20260712.4">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css?v=20260712.5">
+    <link rel="stylesheet" href="./enhancements.css?v=20260712.5">
 </head>
-<body>
-    <header class="site-header">
+<body class="studio-page">
+    <div class="studio-progress" id="studioProgress"></div>
+    <div class="studio-cursor" id="studioCursor"></div>
+
+    <header class="site-header" id="mainHeader">
         <a class="brand" href="#home" aria-label="Hitech Lab - Trang chủ">
             <span class="brand-mark"><i></i><i></i><i></i></span>
-            <span><strong>HITECH</strong><small>MECHATRONICS LAB</small></span>
+            <span><strong>HITECH<span>.</span></strong><small>MECHATRONICS LAB</small></span>
         </a>
         <button class="menu-toggle" aria-label="Mở menu" aria-expanded="false">☰</button>
         <nav class="nav-links">
-            <a class="active" href="#home">Trang chủ</a>
-            <a href="#about">Giới thiệu</a>
-            <a href="#research">Nghiên cứu</a>
+            <a href="#focus">Nghiên cứu</a>
             <a href="#projects">Dự án</a>
-            <a href="#members">Thành viên</a>
             <a href="#attendance">Điểm danh</a>
+            <a href="#members">Thành viên</a>
         </nav>
-        <a class="header-cta" href="mailto:hitechlab@university.edu.vn">Liên hệ <span>↗</span></a>
+        <a class="header-cta" href="mailto:hitechlab@university.edu.vn">Liên hệ</a>
     </header>
 
     <main>
         <section class="hero" id="home">
-            <div class="hero-grid"></div>
+            <div class="hero-glow"></div>
             <div class="hero-content reveal">
-                <div class="eyebrow"><span></span> Innovation starts here</div>
-                <h1>Kiến tạo tương lai cùng <em>Cơ điện tử.</em></h1>
-                <p>Hitech Lab là nơi hội tụ của kỹ thuật cơ khí, điện tử và trí tuệ nhân tạo — nơi những ý tưởng táo bạo trở thành giải pháp thực tiễn.</p>
-                <div class="hero-actions">
-                    <a class="btn btn-primary" href="#research">Khám phá nghiên cứu <span>→</span></a>
-                    <a class="btn btn-ghost" href="#members"><span class="play">▶</span> Gặp gỡ đội ngũ</a>
-                </div>
-                <div class="hero-stats">
-                    <div><strong>08<span>+</span></strong><small>Năm nghiên cứu</small></div>
-                    <div><strong>24<span>+</span></strong><small>Đề tài khoa học</small></div>
-                    <div><strong>35<span>+</span></strong><small>Thành viên</small></div>
-                </div>
+                <span class="hero-badge">WELCOME TO HITECH LAB</span>
+                <h1 class="studio-title">Ý tưởng hôm nay.<br><em>Công nghệ ngày mai.</em></h1>
+                <p>Không gian nghiên cứu Cơ điện tử, nơi chúng tôi biến những ý tưởng về robot và tự động hóa thành sản phẩm thực tế.</p>
+                <a class="btn btn-primary" href="#projects">Khám phá dự án <span>→</span></a>
             </div>
-            <div class="hero-visual reveal">
+            <div class="hero-visual studio-media reveal">
                 <div class="robot-photo-wrap">
                     <img src="images/robot-arm-real.png" alt="Tay robot công nghiệp UR16e trong phòng thí nghiệm" width="1400" height="1075">
                     <div class="photo-label"><span>UR16e</span><small>COLLABORATIVE ROBOT</small></div>
                 </div>
-                <div class="tech-card card-top"><span>●</span><div><small>TRẠNG THÁI LAB</small><strong>Đang hoạt động</strong></div></div>
-                <div class="tech-card card-bottom"><b>AI</b><div><small>HỆ THỐNG ĐIỀU KHIỂN</small><strong>AI Powered</strong></div></div>
-            </div>
-            <div class="scroll-hint">CUỘN ĐỂ KHÁM PHÁ <span>↓</span></div>
-        </section>
-
-        <section class="section about" id="about">
-            <div class="section-heading reveal"><div><span class="kicker">01 / VỀ CHÚNG TÔI</span><h2>Nơi công nghệ<br>gặp gỡ <em>sáng tạo.</em></h2></div><p>Chúng tôi xây dựng môi trường nghiên cứu mở, nơi sinh viên và giảng viên cùng hợp tác để giải quyết các bài toán công nghệ có ý nghĩa.</p></div>
-            <div class="about-cards">
-                <article class="feature-card reveal"><span class="icon">⌬</span><h3>Tầm nhìn</h3><p>Trở thành trung tâm nghiên cứu Cơ điện tử và Robot ứng dụng hàng đầu, kết nối học thuật với công nghiệp.</p><a href="#research">Tìm hiểu thêm →</a></article>
-                <article class="feature-card reveal"><span class="icon">◎</span><h3>Sứ mệnh</h3><p>Đào tạo thế hệ kỹ sư sáng tạo, làm chủ công nghệ và sẵn sàng kiến tạo những giải pháp cho tương lai.</p><a href="#projects">Xem dự án →</a></article>
-                <article class="feature-card accent reveal"><span class="number">35+</span><h3>Một đội ngũ.<br>Vô vàn ý tưởng.</h3><p>Cùng nhau học hỏi, thử nghiệm và tạo ra khác biệt.</p></article>
             </div>
         </section>
 
-        <section class="section research" id="research">
-            <div class="section-title reveal"><span class="kicker">02 / LĨNH VỰC NGHIÊN CỨU</span><h2>Công nghệ chúng tôi<br>đang theo đuổi.</h2></div>
-            <div class="research-list">
-                <article class="research-item reveal"><b>01</b><div class="research-icon">◈</div><div><h3>Robot & Hệ thống tự hành</h3><p>Robot di động, cánh tay máy, AGV và các thuật toán định vị – dẫn đường thông minh.</p></div><span>↗</span></article>
-                <article class="research-item reveal"><b>02</b><div class="research-icon">⌁</div><div><h3>Trí tuệ nhân tạo</h3><p>Thị giác máy tính, học sâu và AI biên cho các hệ thống điều khiển thời gian thực.</p></div><span>↗</span></article>
-                <article class="research-item reveal"><b>03</b><div class="research-icon">⚙</div><div><h3>Tự động hóa thông minh</h3><p>Điều khiển tối ưu, Digital Twin, IoT công nghiệp và nhà máy thông minh.</p></div><span>↗</span></article>
-                <article class="research-item reveal"><b>04</b><div class="research-icon">⌇</div><div><h3>Thiết kế Cơ điện tử</h3><p>Thiết kế tích hợp cơ khí – điện tử, mô phỏng và chế tạo mẫu sản phẩm công nghệ.</p></div><span>↗</span></article>
+        <section class="section focus" id="focus">
+            <div class="compact-heading reveal">
+                <span class="kicker">CHÚNG TÔI NGHIÊN CỨU</span>
+                <h2>Đưa công nghệ<br>vào thế giới thực.</h2>
+            </div>
+            <div class="focus-grid">
+                <article class="focus-card reveal"><span>01</span><div class="focus-icon">◈</div><h3>Robot & AI</h3><p>Robot tự hành, thị giác máy tính và điều khiển thông minh.</p></article>
+                <article class="focus-card reveal"><span>02</span><div class="focus-icon">⌁</div><h3>Tự động hóa</h3><p>IoT công nghiệp, Digital Twin và hệ thống sản xuất tối ưu.</p></article>
+                <article class="focus-card reveal"><span>03</span><div class="focus-icon">⚙</div><h3>Thiết kế Cơ điện tử</h3><p>Từ mô phỏng, thiết kế tích hợp đến chế tạo mẫu hoạt động.</p></article>
             </div>
         </section>
 
-        <section class="section projects" id="projects">
-            <div class="section-title reveal"><span class="kicker">03 / DỰ ÁN NỔI BẬT</span><h2>Từ ý tưởng đến<br>sản phẩm thực tế.</h2></div>
-            <div class="project-grid">
-                <article class="project-card project-a reveal"><div class="project-art"><div class="mini-bot">H-01</div></div><div class="tags"><span>ROBOTICS</span><span>AI</span></div><h3>Robot tự hành trong nhà</h3><p>Hệ thống AMR định vị và tránh vật cản theo thời gian thực.</p></article>
-                <article class="project-card project-b reveal"><div class="project-art"><div class="vision-lens"></div></div><div class="tags"><span>COMPUTER VISION</span></div><h3>Kiểm tra lỗi sản phẩm bằng AI</h3><p>Giải pháp thị giác máy tự động phát hiện sai hỏng trên dây chuyền.</p></article>
-                <article class="project-card project-c reveal"><div class="project-art"><div class="digital-twin">DT</div></div><div class="tags"><span>INDUSTRY 4.0</span><span>IOT</span></div><h3>Digital Twin cho nhà máy</h3><p>Mô phỏng, giám sát và tối ưu hóa hệ thống sản xuất thông minh.</p></article>
+        <section class="section projects-simple" id="projects">
+            <div class="split-heading reveal"><div><span class="kicker">DỰ ÁN NỔI BẬT</span><h2>Được tạo ra<br>tại Hitech Lab.</h2></div><p>Mỗi dự án là một vòng lặp của thiết kế, chế tạo, thử nghiệm và cải tiến.</p></div>
+            <div class="project-showcase">
+                <article class="showcase-card reveal">
+                    <div class="showcase-art art-robot"><div class="mini-bot">AMR</div><span>01 — ROBOTICS</span></div>
+                    <div class="showcase-copy"><h3>Robot tự hành trong nhà</h3><p>Định vị, lập bản đồ và tránh vật cản theo thời gian thực.</p></div>
+                </article>
+                <article class="showcase-card reveal">
+                    <div class="showcase-art art-vision"><div class="vision-lens"></div><span>02 — COMPUTER VISION</span></div>
+                    <div class="showcase-copy"><h3>Kiểm tra sản phẩm bằng AI</h3><p>Phát hiện sai hỏng tự động trên dây chuyền sản xuất.</p></div>
+                </article>
             </div>
         </section>
 
         <section class="section attendance" id="attendance">
             <div class="attendance-heading reveal">
-                <div><span class="kicker">04 / CHECK-IN HITECH LAB</span><h2>Đăng nhập & điểm danh.</h2><p>Ghi nhận thời gian có mặt tại Lab nhanh chóng và minh bạch.</p></div>
+                <div><span class="kicker">CHECK-IN HITECH LAB</span><h2>Điểm danh nhanh.</h2><p>Đăng nhập và ghi nhận thời gian có mặt tại Lab.</p></div>
                 <div class="live-clock"><span id="liveTime">--:--</span><small id="liveDate">Đang tải...</small></div>
             </div>
             <div class="attendance-layout reveal">
                 <div class="login-panel" id="loginPanel">
-                    <div class="panel-icon">↳</div>
-                    <h3>Đăng nhập thành viên</h3>
-                    <p>Sử dụng email đã có trong danh sách thành viên.</p>
+                    <div class="panel-icon">↳</div><h3>Đăng nhập thành viên</h3><p>Sử dụng email trong danh sách thành viên.</p>
                     <form id="loginForm">
                         <label>Email thành viên<input id="loginEmail" type="email" required placeholder="email@university.edu.vn" autocomplete="email"></label>
                         <label>Mã PIN Lab<input id="loginPin" type="password" required inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password"></label>
@@ -116,31 +101,17 @@
         </section>
 
         <section class="section members" id="members">
-            <div class="members-header reveal">
-                <div><span class="kicker">05 / ĐỘI NGŨ HITECH LAB</span><h2>Quản lý thành viên.</h2><p>Những con người tò mò, bền bỉ và không ngừng thử nghiệm.</p></div>
-                <button class="btn btn-primary" id="addMemberBtn">＋ Thêm thành viên</button>
-            </div>
+            <div class="members-header reveal"><div><span class="kicker">ĐỘI NGŨ</span><h2>Thành viên Hitech Lab.</h2><p>Cùng học hỏi, thử nghiệm và tạo ra những sản phẩm có ích.</p></div><button class="btn btn-primary" id="addMemberBtn">＋ Thêm thành viên</button></div>
             <div class="member-toolbar reveal">
-                <label class="search-box"><span>⌕</span><input id="memberSearch" type="search" placeholder="Tìm theo tên, chuyên môn..."></label>
-                <div class="filter-group" role="group" aria-label="Lọc thành viên">
-                    <button class="filter active" data-filter="Tất cả">Tất cả</button>
-                    <button class="filter" data-filter="Giảng viên">Giảng viên</button>
-                    <button class="filter" data-filter="Nghiên cứu viên">Nghiên cứu viên</button>
-                    <button class="filter" data-filter="Sinh viên">Sinh viên</button>
-                </div>
+                <label class="search-box"><span>⌕</span><input id="memberSearch" type="search" placeholder="Tìm thành viên..."></label>
+                <div class="filter-group" role="group" aria-label="Lọc thành viên"><button class="filter active" data-filter="Tất cả">Tất cả</button><button class="filter" data-filter="Giảng viên">Giảng viên</button><button class="filter" data-filter="Nghiên cứu viên">Nghiên cứu viên</button><button class="filter" data-filter="Sinh viên">Sinh viên</button></div>
                 <span class="member-count" id="memberCount"></span>
             </div>
             <div class="member-grid" id="memberGrid"></div>
         </section>
     </main>
 
-    <footer>
-        <div class="footer-brand"><div class="brand"><span class="brand-mark"><i></i><i></i><i></i></span><span><strong>HITECH</strong><small>MECHATRONICS LAB</small></span></div><p>Khơi nguồn sáng tạo.<br>Kiến tạo tương lai.</p></div>
-        <div><h4>Khám phá</h4><a href="#about">Giới thiệu</a><a href="#research">Nghiên cứu</a><a href="#projects">Dự án</a><a href="#members">Thành viên</a></div>
-        <div><h4>Liên hệ</h4><p>Phòng Hitech Lab<br>Khoa Cơ khí – Cơ điện tử<br>Việt Nam</p><a href="mailto:hitechlab@university.edu.vn">hitechlab@university.edu.vn</a></div>
-        <div class="footer-news"><h4>Nhận tin mới</h4><p>Cập nhật dự án và hoạt động mới nhất từ Lab.</p><form id="newsletter"><input type="email" required placeholder="Email của bạn"><button aria-label="Đăng ký">→</button></form></div>
-        <small class="copyright">© 2026 Hitech Mechatronics Lab. Built with curiosity. Robot photo: <a href="https://commons.wikimedia.org/wiki/File:UR16e_robot_arm.png" target="_blank" rel="noreferrer">Wikimedia Commons</a>.</small>
-    </footer>
+    <footer class="simple-footer"><div class="brand"><span class="brand-mark"><i></i><i></i><i></i></span><strong>HITECH<span>.</span></strong></div><p>Mechatronics · Robotics · Automation</p><small>© 2026 Hitech Lab</small></footer>
 
     <dialog id="memberModal">
         <form id="memberForm" method="dialog">
@@ -152,12 +123,12 @@
                 <label>Trạng thái<select id="memberStatus"><option>Đang hoạt động</option><option>Tạm vắng</option></select></label>
                 <label class="full">Chuyên môn<input id="memberSpecialty" required maxlength="100" placeholder="Robot tự hành & Điều khiển"></label>
                 <label>Email<input id="memberEmail" type="email" required placeholder="email@university.edu.vn"></label>
-                <label>Mã màu đại diện<input id="memberColor" type="color" value="#00d6a3"></label>
+                <label>Màu đại diện<input id="memberColor" type="color" value="#ea580c"></label>
             </div>
             <div class="modal-actions"><button type="button" class="btn cancel-modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu thành viên</button></div>
         </form>
     </dialog>
     <div class="toast" id="toast" role="status"></div>
-    <script src="./script.js?v=20260712.3"></script>
+    <script src="./script.js?v=20260712.5"></script>
 </body>
 </html>

@@ -131,7 +131,7 @@ const observer = new IntersectionObserver(entries => entries.forEach(entry => {
 }), { threshold: .08 });
 document.querySelectorAll('.reveal').forEach(element => observer.observe(element));
 
-document.querySelector('#newsletter').addEventListener('submit', event => {
+document.querySelector('#newsletter')?.addEventListener('submit', event => {
   event.preventDefault();
   event.target.reset();
   toast.textContent = 'Cảm ơn bạn đã đăng ký!';
@@ -244,3 +244,47 @@ document.querySelector('#checkOutBtn').addEventListener('click', () => recordAtt
 updateClock();
 setInterval(updateClock, 30000);
 renderAttendance();
+
+// Lightweight studio effects inspired by the visual language of hmslab.store.
+const progressBar = document.querySelector('#studioProgress');
+const studioCursor = document.querySelector('#studioCursor');
+const mainHeader = document.querySelector('#mainHeader');
+const media = document.querySelector('.studio-media');
+
+function updateScrollEffects() {
+  const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = scrollable > 0 ? window.scrollY / scrollable : 0;
+  progressBar.style.transform = `scaleX(${Math.min(1, progress)})`;
+  mainHeader.classList.toggle('scrolled', window.scrollY > 24);
+}
+
+window.addEventListener('scroll', updateScrollEffects, { passive: true });
+updateScrollEffects();
+
+if (matchMedia('(pointer: fine)').matches) {
+  window.addEventListener('pointermove', event => {
+    document.documentElement.style.setProperty('--cursor-x', `${event.clientX}px`);
+    document.documentElement.style.setProperty('--cursor-y', `${event.clientY}px`);
+    studioCursor.style.left = `${event.clientX}px`;
+    studioCursor.style.top = `${event.clientY}px`;
+    studioCursor.classList.add('active');
+  });
+  document.querySelectorAll('a, button, input, select').forEach(element => {
+    element.addEventListener('pointerenter', () => studioCursor.classList.add('link'));
+    element.addEventListener('pointerleave', () => studioCursor.classList.remove('link'));
+  });
+
+  media?.addEventListener('pointermove', event => {
+    const box = media.getBoundingClientRect();
+    const x = (event.clientX - box.left) / box.width;
+    const y = (event.clientY - box.top) / box.height;
+    document.documentElement.style.setProperty('--tilt-y', `${(x - .5) * 4}deg`);
+    document.documentElement.style.setProperty('--tilt-x', `${(.5 - y) * 4}deg`);
+    document.documentElement.style.setProperty('--light-x', `${x * 100}%`);
+    document.documentElement.style.setProperty('--light-y', `${y * 100}%`);
+  });
+  media?.addEventListener('pointerleave', () => {
+    document.documentElement.style.setProperty('--tilt-x', '0deg');
+    document.documentElement.style.setProperty('--tilt-y', '0deg');
+  });
+}
