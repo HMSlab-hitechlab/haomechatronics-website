@@ -151,6 +151,8 @@ const loginPanel = document.querySelector('#loginPanel');
 const checkinPanel = document.querySelector('#checkinPanel');
 const attendanceList = document.querySelector('#attendanceList');
 
+if (loginPanel) {
+
 function localDateKey(date = new Date()) {
   const offset = date.getTimezoneOffset() * 60000;
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
@@ -244,6 +246,7 @@ document.querySelector('#checkOutBtn').addEventListener('click', () => recordAtt
 updateClock();
 setInterval(updateClock, 30000);
 renderAttendance();
+}
 
 // Lightweight studio effects inspired by the visual language of hmslab.store.
 const progressBar = document.querySelector('#studioProgress');

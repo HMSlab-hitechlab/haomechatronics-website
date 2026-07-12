@@ -25,10 +25,10 @@
         <nav class="nav-links">
             <a href="#focus">Nghiên cứu</a>
             <a href="#projects">Dự án</a>
-            <a href="#attendance">Điểm danh</a>
+            <a href="attendance.html">Điểm danh</a>
             <a href="#members">Thành viên</a>
         </nav>
-        <a class="header-cta" href="#attendance">Đăng nhập</a>
+        <a class="header-cta" href="attendance.html">Đăng nhập</a>
     </header>
 
     <main>
@@ -74,33 +74,6 @@
                     <div class="showcase-art art-vision"><div class="vision-lens"></div><span>02 — COMPUTER VISION</span></div>
                     <div class="showcase-copy"><h3>Kiểm tra sản phẩm bằng AI</h3><p>Phát hiện sai hỏng tự động trên dây chuyền sản xuất.</p></div>
                 </article>
-            </div>
-        </section>
-
-        <section class="section attendance" id="attendance">
-            <div class="attendance-heading reveal">
-                <div><span class="kicker">CHECK-IN HITECH LAB</span><h2>Điểm danh nhanh.</h2><p>Đăng nhập và ghi nhận thời gian có mặt tại Lab.</p></div>
-                <div class="live-clock"><span id="liveTime">--:--</span><small id="liveDate">Đang tải...</small></div>
-            </div>
-            <div class="attendance-layout reveal">
-                <div class="login-panel" id="loginPanel">
-                    <div class="panel-icon">↳</div><h3>Đăng nhập thành viên</h3><p>Sử dụng email trong danh sách thành viên.</p>
-                    <form id="loginForm">
-                        <label>Email thành viên<input id="loginEmail" type="email" required placeholder="email@university.edu.vn" autocomplete="email"></label>
-                        <label>Mã PIN Lab<input id="loginPin" type="password" required inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password"></label>
-                        <button class="btn btn-primary" type="submit">Đăng nhập <span>→</span></button>
-                        <small class="login-hint">Mã PIN dùng thử: <b>2026</b></small>
-                    </form>
-                </div>
-                <div class="checkin-panel hidden" id="checkinPanel">
-                    <div class="signed-user"><div class="attendance-avatar" id="attendanceAvatar">HL</div><div><small>ĐÃ ĐĂNG NHẬP</small><h3 id="attendanceName">Thành viên</h3><p id="attendanceRole"></p></div><button id="logoutBtn" type="button">Đăng xuất</button></div>
-                    <div class="presence-card"><span class="presence-dot"></span><div><small>TRẠNG THÁI HIỆN TẠI</small><strong id="presenceStatus">Chưa vào Lab</strong></div></div>
-                    <div class="check-actions"><button class="check-btn check-in" id="checkInBtn" type="button"><span>↓</span><div><b>Check-in</b><small>Xác nhận vào Lab</small></div></button><button class="check-btn check-out" id="checkOutBtn" type="button"><span>↑</span><div><b>Check-out</b><small>Xác nhận rời Lab</small></div></button></div>
-                </div>
-                <aside class="attendance-log">
-                    <div class="log-title"><div><small>HOẠT ĐỘNG HÔM NAY</small><h3>Lịch sử điểm danh</h3></div><span id="todayCount">0 lượt</span></div>
-                    <div id="attendanceList" class="attendance-list"><div class="empty-log">Chưa có hoạt động điểm danh.</div></div>
-                </aside>
             </div>
         </section>
 

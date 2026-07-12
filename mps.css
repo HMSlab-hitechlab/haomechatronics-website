@@ -123,6 +123,61 @@
     display: none !important;
 }
 
+.attendance-page {
+    min-height: 100vh;
+    background: #fff7ed;
+}
+
+.attendance-page .site-header {
+    position: fixed;
+}
+
+.attendance-nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    font-size: 11px;
+}
+
+.attendance-nav a {
+    color: #71717a;
+}
+
+.attendance-nav a:hover {
+    color: #ea580c;
+}
+
+.attendance-nav span {
+    padding: 7px 12px;
+    border-radius: 999px;
+    color: #9a3412;
+    background: #ffedd5;
+    font-weight: 600;
+}
+
+.attendance-standalone {
+    min-height: 100vh;
+    padding-top: 145px;
+}
+
+.attendance-standalone .attendance-heading h1 {
+    margin: 12px 0 0;
+    color: #111;
+    font-size: clamp(42px, 5vw, 64px);
+    line-height: 1.06;
+    letter-spacing: -.055em;
+}
+
+@media (max-width: 600px) {
+    .attendance-nav span {
+        display: none;
+    }
+
+    .attendance-standalone {
+        padding-top: 110px;
+    }
+}
+
 .footer-copyright {
     margin-left: 4px !important;
     color: #71717a;
