@@ -1,8 +1,10 @@
 .robot-photo-wrap img {
-    object-position: center 48%;
-    transform: scale(1.08);
+    object-fit: contain;
+    object-position: center bottom;
+    transform: scale(1.12);
+    background: #f7f7f7;
 }
 
 .studio-media:hover img {
-    transform: scale(1.13);
+    transform: scale(1.16);
 }
