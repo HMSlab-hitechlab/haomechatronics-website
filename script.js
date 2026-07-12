@@ -140,3 +140,107 @@ document.querySelector('#newsletter').addEventListener('submit', event => {
 });
 
 renderMembers();
+
+// Attendance: local demo for a static GitHub Pages website.
+const ATTENDANCE_KEY = 'hitech-lab-attendance-v1';
+const SESSION_KEY = 'hitech-lab-session-v1';
+let attendanceRecords = JSON.parse(localStorage.getItem(ATTENDANCE_KEY) || '[]');
+let signedInEmail = localStorage.getItem(SESSION_KEY) || '';
+
+const loginPanel = document.querySelector('#loginPanel');
+const checkinPanel = document.querySelector('#checkinPanel');
+const attendanceList = document.querySelector('#attendanceList');
+
+function localDateKey(date = new Date()) {
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function updateClock() {
+  const now = new Date();
+  document.querySelector('#liveTime').textContent = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+  document.querySelector('#liveDate').textContent = now.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function currentAttendanceMember() {
+  return members.find(member => member.email.toLowerCase() === signedInEmail.toLowerCase());
+}
+
+function lastMemberAction(email) {
+  return attendanceRecords.filter(record => record.email === email).sort((a, b) => b.timestamp - a.timestamp)[0];
+}
+
+function renderAttendance() {
+  const member = currentAttendanceMember();
+  loginPanel.classList.toggle('hidden', Boolean(member));
+  checkinPanel.classList.toggle('hidden', !member);
+
+  if (member) {
+    document.querySelector('#attendanceName').textContent = member.name;
+    document.querySelector('#attendanceRole').textContent = `${member.role} · ${member.specialty}`;
+    const avatar = document.querySelector('#attendanceAvatar');
+    avatar.textContent = initials(member.name);
+    avatar.style.background = member.color;
+    const lastAction = lastMemberAction(member.email);
+    const isInside = lastAction?.type === 'in';
+    document.querySelector('#presenceStatus').textContent = isInside ? 'Đang có mặt tại Lab' : 'Chưa vào Lab';
+    document.querySelector('.presence-card').classList.toggle('active', isInside);
+    document.querySelector('#checkInBtn').disabled = isInside;
+    document.querySelector('#checkOutBtn').disabled = !isInside;
+  }
+
+  const today = localDateKey();
+  const todayRecords = attendanceRecords.filter(record => record.date === today).sort((a, b) => b.timestamp - a.timestamp);
+  document.querySelector('#todayCount').textContent = `${todayRecords.length} lượt`;
+  attendanceList.innerHTML = todayRecords.length ? todayRecords.map(record => `
+    <div class="log-item">
+      <span class="log-dot ${record.type === 'out' ? 'out' : ''}"></span>
+      <div><strong>${escapeHTML(record.name)}</strong><small>${record.type === 'in' ? 'Check-in · Vào Lab' : 'Check-out · Rời Lab'}</small></div>
+      <time>${new Date(record.timestamp).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</time>
+    </div>`).join('') : '<div class="empty-log">Chưa có hoạt động điểm danh.</div>';
+}
+
+document.querySelector('#loginForm').addEventListener('submit', event => {
+  event.preventDefault();
+  const email = document.querySelector('#loginEmail').value.trim().toLowerCase();
+  const pin = document.querySelector('#loginPin').value;
+  const member = members.find(item => item.email.toLowerCase() === email);
+  if (!member || pin !== '2026') {
+    toast.textContent = 'Email hoặc mã PIN không chính xác';
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2200);
+    return;
+  }
+  signedInEmail = member.email;
+  localStorage.setItem(SESSION_KEY, signedInEmail);
+  event.target.reset();
+  renderAttendance();
+  toast.textContent = `Xin chào ${member.name}!`;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+});
+
+document.querySelector('#logoutBtn').addEventListener('click', () => {
+  signedInEmail = '';
+  localStorage.removeItem(SESSION_KEY);
+  renderAttendance();
+});
+
+function recordAttendance(type) {
+  const member = currentAttendanceMember();
+  if (!member) return;
+  const now = new Date();
+  attendanceRecords.push({ id: Date.now(), email: member.email, name: member.name, type, timestamp: now.getTime(), date: localDateKey(now) });
+  localStorage.setItem(ATTENDANCE_KEY, JSON.stringify(attendanceRecords));
+  renderAttendance();
+  toast.textContent = type === 'in' ? 'Check-in thành công!' : 'Check-out thành công!';
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+document.querySelector('#checkInBtn').addEventListener('click', () => recordAttendance('in'));
+document.querySelector('#checkOutBtn').addEventListener('click', () => recordAttendance('out'));
+
+updateClock();
+setInterval(updateClock, 30000);
+renderAttendance();

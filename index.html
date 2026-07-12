@@ -9,7 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
     <!-- Versioned assets prevent GitHub Pages/custom-domain cache mismatch. -->
-    <link rel="stylesheet" href="./style.css?v=20260712.2">
+    <link rel="stylesheet" href="./style.css?v=20260712.3">
+    <link rel="stylesheet" href="./enhancements.css?v=20260712.3">
 </head>
 <body>
     <header class="site-header">
@@ -24,6 +25,7 @@
             <a href="#research">Nghiên cứu</a>
             <a href="#projects">Dự án</a>
             <a href="#members">Thành viên</a>
+            <a href="#attendance">Điểm danh</a>
         </nav>
         <a class="header-cta" href="mailto:hitechlab@university.edu.vn">Liên hệ <span>↗</span></a>
     </header>
@@ -46,12 +48,11 @@
                 </div>
             </div>
             <div class="hero-visual reveal">
-                <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
-                <div class="tech-card card-top"><span>●</span><div><small>TRẠNG THÁI LAB</small><strong>Đang hoạt động</strong></div></div>
-                <div class="robot-illustration" aria-label="Minh họa cánh tay robot">
-                    <div class="robot-base"></div><div class="robot-joint j1"></div><div class="robot-arm a1"></div>
-                    <div class="robot-joint j2"></div><div class="robot-arm a2"></div><div class="robot-claw">⌁</div>
+                <div class="robot-photo-wrap">
+                    <img src="images/robot-arm-real.png" alt="Tay robot công nghiệp UR16e trong phòng thí nghiệm" width="1400" height="1075">
+                    <div class="photo-label"><span>UR16e</span><small>COLLABORATIVE ROBOT</small></div>
                 </div>
+                <div class="tech-card card-top"><span>●</span><div><small>TRẠNG THÁI LAB</small><strong>Đang hoạt động</strong></div></div>
                 <div class="tech-card card-bottom"><b>AI</b><div><small>HỆ THỐNG ĐIỀU KHIỂN</small><strong>AI Powered</strong></div></div>
             </div>
             <div class="scroll-hint">CUỘN ĐỂ KHÁM PHÁ <span>↓</span></div>
@@ -85,9 +86,38 @@
             </div>
         </section>
 
+        <section class="section attendance" id="attendance">
+            <div class="attendance-heading reveal">
+                <div><span class="kicker">04 / CHECK-IN HITECH LAB</span><h2>Đăng nhập & điểm danh.</h2><p>Ghi nhận thời gian có mặt tại Lab nhanh chóng và minh bạch.</p></div>
+                <div class="live-clock"><span id="liveTime">--:--</span><small id="liveDate">Đang tải...</small></div>
+            </div>
+            <div class="attendance-layout reveal">
+                <div class="login-panel" id="loginPanel">
+                    <div class="panel-icon">↳</div>
+                    <h3>Đăng nhập thành viên</h3>
+                    <p>Sử dụng email đã có trong danh sách thành viên.</p>
+                    <form id="loginForm">
+                        <label>Email thành viên<input id="loginEmail" type="email" required placeholder="email@university.edu.vn" autocomplete="email"></label>
+                        <label>Mã PIN Lab<input id="loginPin" type="password" required inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password"></label>
+                        <button class="btn btn-primary" type="submit">Đăng nhập <span>→</span></button>
+                        <small class="login-hint">Mã PIN dùng thử: <b>2026</b></small>
+                    </form>
+                </div>
+                <div class="checkin-panel hidden" id="checkinPanel">
+                    <div class="signed-user"><div class="attendance-avatar" id="attendanceAvatar">HL</div><div><small>ĐÃ ĐĂNG NHẬP</small><h3 id="attendanceName">Thành viên</h3><p id="attendanceRole"></p></div><button id="logoutBtn" type="button">Đăng xuất</button></div>
+                    <div class="presence-card"><span class="presence-dot"></span><div><small>TRẠNG THÁI HIỆN TẠI</small><strong id="presenceStatus">Chưa vào Lab</strong></div></div>
+                    <div class="check-actions"><button class="check-btn check-in" id="checkInBtn" type="button"><span>↓</span><div><b>Check-in</b><small>Xác nhận vào Lab</small></div></button><button class="check-btn check-out" id="checkOutBtn" type="button"><span>↑</span><div><b>Check-out</b><small>Xác nhận rời Lab</small></div></button></div>
+                </div>
+                <aside class="attendance-log">
+                    <div class="log-title"><div><small>HOẠT ĐỘNG HÔM NAY</small><h3>Lịch sử điểm danh</h3></div><span id="todayCount">0 lượt</span></div>
+                    <div id="attendanceList" class="attendance-list"><div class="empty-log">Chưa có hoạt động điểm danh.</div></div>
+                </aside>
+            </div>
+        </section>
+
         <section class="section members" id="members">
             <div class="members-header reveal">
-                <div><span class="kicker">04 / ĐỘI NGŨ HITECH LAB</span><h2>Quản lý thành viên.</h2><p>Những con người tò mò, bền bỉ và không ngừng thử nghiệm.</p></div>
+                <div><span class="kicker">05 / ĐỘI NGŨ HITECH LAB</span><h2>Quản lý thành viên.</h2><p>Những con người tò mò, bền bỉ và không ngừng thử nghiệm.</p></div>
                 <button class="btn btn-primary" id="addMemberBtn">＋ Thêm thành viên</button>
             </div>
             <div class="member-toolbar reveal">
@@ -109,7 +139,7 @@
         <div><h4>Khám phá</h4><a href="#about">Giới thiệu</a><a href="#research">Nghiên cứu</a><a href="#projects">Dự án</a><a href="#members">Thành viên</a></div>
         <div><h4>Liên hệ</h4><p>Phòng Hitech Lab<br>Khoa Cơ khí – Cơ điện tử<br>Việt Nam</p><a href="mailto:hitechlab@university.edu.vn">hitechlab@university.edu.vn</a></div>
         <div class="footer-news"><h4>Nhận tin mới</h4><p>Cập nhật dự án và hoạt động mới nhất từ Lab.</p><form id="newsletter"><input type="email" required placeholder="Email của bạn"><button aria-label="Đăng ký">→</button></form></div>
-        <small class="copyright">© 2026 Hitech Mechatronics Lab. Built with curiosity.</small>
+        <small class="copyright">© 2026 Hitech Mechatronics Lab. Built with curiosity. Robot photo: <a href="https://commons.wikimedia.org/wiki/File:UR16e_robot_arm.png" target="_blank" rel="noreferrer">Wikimedia Commons</a>.</small>
     </footer>
 
     <dialog id="memberModal">
@@ -128,6 +158,6 @@
         </form>
     </dialog>
     <div class="toast" id="toast" role="status"></div>
-    <script src="./script.js?v=20260712.2"></script>
+    <script src="./script.js?v=20260712.3"></script>
 </body>
 </html>
