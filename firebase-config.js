@@ -2,7 +2,7 @@
 // Cấu hình Web app của project haomechatronicslab.
 window.LAB_CONFIG = {
   firebase: {
-    apiKey: 'AIzaSyBCKoVT05yCWh4CA8UJNGGDZaSns42vdNI',
+    apiKey: 'AIzaSyBCKoVTO5yCWh4CA8UJNGGDZaSns42vdNI',
     authDomain: 'haomechatronicslab.firebaseapp.com',
     projectId: 'haomechatronicslab',
     storageBucket: 'haomechatronicslab.firebasestorage.app',
