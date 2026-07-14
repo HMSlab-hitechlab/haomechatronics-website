@@ -213,10 +213,8 @@ function renderMyPresence() {
   $('#presenceZone').textContent = inside ? zones[mine.zone] || '' : '';
   $('#summaryPresence').textContent = inside ? 'Đang check-in' : 'Chưa check-in';
   $('#summaryPresenceMeta').textContent = inside ? zones[mine.zone] || 'Trong phòng Lab' : 'Ngoài phòng Lab';
-  $('#zoneSelect').value = inside ? mine.zone : $('#zoneSelect').value;
-  $('#zoneSelect').disabled = inside;
-  $('#checkInBtn').disabled = inside || new Date() >= closingTime();
   $('#checkOutBtn').disabled = !inside;
+  updateCheckinAvailability();
 }
 
 function watchBookings() {
@@ -275,6 +273,42 @@ function renderBookings() {
     return `<article class="booking-item" data-booking-id="${booking.id}"><div class="booking-item-head"><strong>${escapeText(zones[booking.zone] || booking.zone)}</strong><time>${formatDate(booking.startAt)}</time></div><p>${formatTime(booking.startAt)}–${formatTime(booking.endAt)} · ${booking.durationHours} giờ</p><div class="booking-item-footer"><span class="booking-status ${status}">${statusLabels[status] || status}</span>${cancellable ? '<button class="cancel-booking" type="button">Hủy lịch</button>' : ''}</div></article>`;
   }).join('') : '<div class="empty-log">Chưa có lịch đặt chỗ.</div>';
   renderPolicy();
+  updateCheckinAvailability();
+}
+
+function nextReservation(now = new Date()) {
+  return myBookings().filter(booking => bookingEffectiveStatus(booking, now) === 'reserved' && timestampDate(booking.endAt) > now).sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt))[0];
+}
+
+function updateCheckinAvailability() {
+  if (!currentUser) return;
+  const now = new Date();
+  const presence = presences.find(item => item.id === currentUser.uid);
+  const inside = presenceIsActive(presence, now);
+  const eligible = eligibleBooking(null, now);
+  const upcoming = eligible || nextReservation(now);
+  const zone = inside ? presence.zone : upcoming?.zone || '';
+  $('#zoneSelect').value = zone;
+  $('#zoneSelect').disabled = true;
+  document.querySelectorAll('.lab-zone').forEach(item => item.classList.toggle('selected', Boolean(zone) && item.dataset.zone === zone));
+  if (inside) {
+    $('#bookingCheckinHint').textContent = `Đang sử dụng ${zones[zone] || 'phòng Lab'}.`;
+    $('#bookingCheckinHint').classList.add('ready');
+    $('#mapHelp').textContent = `Vị trí hiện tại: ${zones[zone] || 'phòng Lab'}.`;
+  } else if (eligible) {
+    $('#bookingCheckinHint').textContent = `Lịch ${formatTime(eligible.startAt)}–${formatTime(eligible.endAt)} tại ${zones[eligible.zone]} đã sẵn sàng check-in.`;
+    $('#bookingCheckinHint').classList.add('ready');
+    $('#mapHelp').textContent = `Vị trí đã đặt: ${zones[eligible.zone]}.`;
+  } else if (upcoming) {
+    $('#bookingCheckinHint').textContent = `Đã đặt ${zones[upcoming.zone]} ngày ${formatDate(upcoming.startAt)}, ${formatTime(upcoming.startAt)}–${formatTime(upcoming.endAt)}. Check-in mở trước 30 phút.`;
+    $('#bookingCheckinHint').classList.remove('ready');
+    $('#mapHelp').textContent = `Lịch sắp tới: ${zones[upcoming.zone]} · ${formatDate(upcoming.startAt)} ${formatTime(upcoming.startAt)}.`;
+  } else {
+    $('#bookingCheckinHint').textContent = 'Hãy đặt một vị trí trước khi check-in.';
+    $('#bookingCheckinHint').classList.remove('ready');
+    $('#mapHelp').textContent = 'Sơ đồ gồm bốn vị trí có thể đặt trước trong phòng Lab.';
+  }
+  $('#checkInBtn').disabled = inside || !eligible || now >= closingTime(now);
 }
 
 function initializeBookingDefaults() {
@@ -338,8 +372,12 @@ async function createBooking(event) {
     });
     notify(`Đã đặt ${zones[zone]} từ ${formatTime(start)} đến ${formatTime(end)}.`);
     $('#bookingZone').value = '';
+    document.querySelectorAll('[data-booking-zone]').forEach(button => button.classList.remove('selected'));
   } catch (error) {
-    notify(`Không thể đặt chỗ (${error.code}). Kiểm tra Firestore Rules.`, true);
+    const message = error.code === 'permission-denied'
+      ? 'Không có quyền tạo lịch. Hãy Publish bản firestore.rules mới có mục bookings.'
+      : `Không thể đặt chỗ (${error.code || 'unknown'}). Vui lòng thử lại.`;
+    notify(message, true);
   }
 }
 
@@ -354,9 +392,9 @@ async function cancelBooking(id) {
   }
 }
 
-function eligibleBooking(zone, now = new Date()) {
+function eligibleBooking(zone = null, now = new Date()) {
   return myBookings().find(booking => {
-    if (booking.zone !== zone || bookingEffectiveStatus(booking, now) !== 'reserved') return false;
+    if ((zone && booking.zone !== zone) || bookingEffectiveStatus(booking, now) !== 'reserved') return false;
     const start = timestampDate(booking.startAt);
     const end = timestampDate(booking.endAt);
     return now >= new Date(start.getTime() - 30 * 60000) && now < end;
@@ -403,12 +441,12 @@ async function updateAccount(uid, status) {
 
 async function recordAttendance(type) {
   if (!currentUser || currentProfile?.status !== 'approved') return;
-  const zone = $('#zoneSelect').value;
   const now = new Date();
   if (type === 'in' && now >= closingTime(now)) return notify('Phòng Lab đã kết thúc phiên làm việc lúc 22:00.', true);
-  if (type === 'in' && !zone) return notify('Hãy chọn khu vực làm việc trước khi check-in.', true);
   const mine = presences.find(item => item.id === currentUser.uid);
-  const booking = type === 'in' ? eligibleBooking(zone, now) : bookings.find(item => item.id === mine?.bookingId);
+  const booking = type === 'in' ? eligibleBooking(null, now) : bookings.find(item => item.id === mine?.bookingId);
+  if (type === 'in' && !booking) return notify('Chưa có lịch đặt chỗ đang hiệu lực. Check-in mở trước giờ bắt đầu 30 phút.', true);
+  const zone = type === 'in' ? booking.zone : mine?.zone || '';
   const data = { uid: currentUser.uid, email: currentUser.email, displayName: currentUser.displayName || 'Thành viên', photoURL: currentUser.photoURL || '', inside: type === 'in', zone: type === 'in' ? zone : '', bookingId: type === 'in' ? booking?.id || '' : '', updatedAt: serverTimestamp() };
   try {
     await setDoc(doc(db, 'presence', currentUser.uid), data, { merge: true });
@@ -449,16 +487,15 @@ $('#googleLoginBtn').addEventListener('click', async () => {
 
 ['#logoutBtn', '#pendingLogoutBtn'].forEach(selector => $(selector).addEventListener('click', () => signOut(auth)));
 $('#bookingForm').addEventListener('submit', createBooking);
+$('#bookingZonePicker').addEventListener('click', event => {
+  const button = event.target.closest('[data-booking-zone]');
+  if (!button) return;
+  $('#bookingZone').value = button.dataset.bookingZone;
+  document.querySelectorAll('[data-booking-zone]').forEach(item => item.classList.toggle('selected', item === button));
+});
 $('#bookingList').addEventListener('click', event => { const item = event.target.closest('[data-booking-id]'); if (item && event.target.closest('.cancel-booking')) cancelBooking(item.dataset.bookingId); });
 $('#checkInBtn').addEventListener('click', () => recordAttendance('in'));
 $('#checkOutBtn').addEventListener('click', () => recordAttendance('out'));
-$('#labMap').addEventListener('click', event => {
-  const zone = event.target.closest('.lab-zone');
-  if (!zone || $('#zoneSelect').disabled) return;
-  $('#zoneSelect').value = zone.dataset.zone;
-  document.querySelectorAll('.lab-zone').forEach(item => item.classList.toggle('selected', item === zone));
-});
-$('#zoneSelect').addEventListener('change', event => document.querySelectorAll('.lab-zone').forEach(item => item.classList.toggle('selected', item.dataset.zone === event.target.value)));
 $('#accountList').addEventListener('click', event => {
   const action = event.target.closest('[data-action]');
   const row = event.target.closest('[data-uid]');

@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./style.css?v=20260714.3">
     <link rel="stylesheet" href="./enhancements.css?v=20260714.3">
     <link rel="stylesheet" href="./mps.css?v=20260714.3">
-    <link rel="stylesheet" href="./auth.css?v=20260714.4">
+    <link rel="stylesheet" href="./auth.css?v=20260714.5">
 </head>
 <body class="attendance-page lab-portal-page">
     <header class="site-header scrolled portal-header">
@@ -75,7 +75,16 @@
                         <p class="section-description">Chọn khu vực, ngày bắt đầu và thời lượng hoạt động. Mỗi lịch đặt phải kết thúc trước 22:00.</p>
                         <div class="policy-alert hidden" id="policyAlert" role="alert"></div>
                         <form id="bookingForm" class="booking-form">
-                            <label>Khu vực<select id="bookingZone" required><option value="">Chọn khu vực...</option><option value="robot">Khu Robot & MPS</option><option value="design">Khu thiết kế CAD</option><option value="electronics">Bàn điện tử & IoT</option><option value="meeting">Bàn họp nhóm</option></select></label>
+                            <fieldset class="booking-location">
+                                <legend>Vị trí cụ thể</legend>
+                                <input id="bookingZone" type="hidden" required>
+                                <div class="booking-zone-picker" id="bookingZonePicker">
+                                    <button data-booking-zone="robot" type="button"><span>01</span><strong>Khu Robot & MPS</strong><small>Robot arm · Automation</small></button>
+                                    <button data-booking-zone="design" type="button"><span>02</span><strong>Khu thiết kế CAD</strong><small>CAD · Simulation</small></button>
+                                    <button data-booking-zone="electronics" type="button"><span>03</span><strong>Bàn điện tử & IoT</strong><small>Embedded · Prototyping</small></button>
+                                    <button data-booking-zone="meeting" type="button"><span>04</span><strong>Bàn họp nhóm</strong><small>Review · Collaboration</small></button>
+                                </div>
+                            </fieldset>
                             <label>Ngày sử dụng<input id="bookingDate" type="date" required></label>
                             <label>Giờ bắt đầu<input id="bookingStart" type="time" min="07:00" max="21:00" step="1800" required></label>
                             <label>Thời lượng<select id="bookingDuration" required><option value="1">1 giờ</option><option value="2">2 giờ</option><option value="3">3 giờ</option><option value="4">4 giờ</option><option value="6">6 giờ</option></select></label>
@@ -105,7 +114,8 @@
                         <span class="kicker">PHIÊN LÀM VIỆC</span>
                         <h2>Check-in / Check-out</h2>
                         <div class="presence-card"><span class="presence-dot"></span><div><small>TRẠNG THÁI HIỆN TẠI</small><strong id="presenceStatus">Chưa vào Lab</strong><span id="presenceZone"></span></div></div>
-                        <label class="zone-select">Vị trí làm việc<select id="zoneSelect"><option value="">Chọn khu vực...</option><option value="robot">Khu Robot & MPS</option><option value="design">Khu thiết kế CAD</option><option value="electronics">Bàn điện tử & IoT</option><option value="meeting">Bàn họp nhóm</option></select></label>
+                        <label class="zone-select">Vị trí đã đặt<select id="zoneSelect" disabled><option value="">Chưa có lịch đặt chỗ</option><option value="robot">Khu Robot & MPS</option><option value="design">Khu thiết kế CAD</option><option value="electronics">Bàn điện tử & IoT</option><option value="meeting">Bàn họp nhóm</option></select></label>
+                        <div class="booking-checkin-hint" id="bookingCheckinHint">Hãy đặt chỗ trước khi check-in.</div>
                         <div class="check-actions vertical"><button class="check-btn check-in" id="checkInBtn" type="button"><span>↓</span><div><b>Check-in</b><small>Xác nhận vào Lab</small></div></button><button class="check-btn check-out" id="checkOutBtn" type="button"><span>↑</span><div><b>Check-out</b><small>Kết thúc phiên làm việc</small></div></button></div>
                         <small class="automatic-note">Phiên chưa kết thúc sẽ tự hết hiệu lực lúc 22:00.</small>
                     </aside>
@@ -117,6 +127,6 @@
     </main>
     <div class="toast" id="toast" role="status"></div>
     <script src="./firebase-config.js?v=20260714.3"></script>
-    <script type="module" src="./attendance.js?v=20260714.3"></script>
+    <script type="module" src="./attendance.js?v=20260714.5"></script>
 </body>
 </html>

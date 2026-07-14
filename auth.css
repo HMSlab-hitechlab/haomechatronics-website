@@ -46,3 +46,23 @@
   .portal-userbar,.admin-panel{border-radius:16px}
   .booking-form-card,.my-bookings-card,.lab-map-card,.checkin-card,.full-log{border-radius:18px}
 }
+
+/* Booking uses the same four physical zones as the check-in map. */
+.booking-location{grid-column:1/-1;margin:0;padding:0;border:0;min-width:0}
+.booking-location legend{margin-bottom:9px;color:#526873;font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.booking-zone-picker{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.booking-zone-picker button{position:relative;min-width:0;min-height:92px;padding:16px;border:1px solid var(--portal-line);border-radius:14px;background:#f8fafb;color:var(--portal-ink);display:flex;flex-direction:column;align-items:flex-start;text-align:left;cursor:pointer;transition:.2s}
+.booking-zone-picker button:hover{border-color:#92b9b2;background:#f1f8f6}
+.booking-zone-picker button.selected{border-color:var(--portal-teal);background:var(--portal-teal-soft);box-shadow:inset 0 0 0 1px var(--portal-teal)}
+.booking-zone-picker button>span{position:absolute;top:13px;right:14px;color:#9eafb5;font-size:9px;font-weight:800}
+.booking-zone-picker button.selected>span{color:var(--portal-teal)}
+.booking-zone-picker strong{padding-right:28px;font-size:12px}
+.booking-zone-picker small{margin-top:6px;color:var(--portal-muted);font-size:9px}
+.zone-select select:disabled{opacity:1;color:var(--portal-ink);background:#f3f7f7;cursor:not-allowed}
+.booking-checkin-hint{margin-top:10px;padding:11px 12px;border-radius:12px;background:#f3f7f7;color:var(--portal-muted);font-size:9px;line-height:1.55}
+.booking-checkin-hint.ready{background:var(--portal-teal-soft);color:#08665b}
+.lab-zone{cursor:default}
+
+@media(max-width:600px){
+  .booking-zone-picker{grid-template-columns:1fr}
+}
