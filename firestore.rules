@@ -7,12 +7,12 @@ service cloud.firestore {
 
     function isBootstrapAdmin() {
       // Thay đúng email này trước khi deploy. Phải giống firebase-config.js.
-      return signedIn() && request.auth.token.email == 'ADMIN_EMAIL@vlute.edu.vn';
+      return signedIn() && request.auth.token.email == '25902004@st.vlute.edu.vn';
     }
 
     function allowedDomain() {
       // Sửa tên miền tại đây nếu trường dùng tên miền khác.
-      return signedIn() && request.auth.token.email.matches('.*@vlute\\.edu\\.vn$');
+      return signedIn() && request.auth.token.email.matches('.*@st\\.vlute\\.edu\\.vn$');
     }
 
     function profile() {

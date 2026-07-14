@@ -10,7 +10,7 @@ window.LAB_CONFIG = {
     appId: 'PASTE_APP_ID'
   },
   // Sửa đúng tên miền email Google Workspace for Education của trường/phòng Lab.
-  allowedDomains: ['vlute.edu.vn'],
+  allowedDomains: ['st.vlute.edu.vn'],
   // Sửa đúng email Google của bạn. Phải giống ADMIN_EMAIL trong firestore.rules.
-  adminEmails: ['ADMIN_EMAIL@vlute.edu.vn']
+  adminEmails: ['25902004@st.vlute.edu.vn']
 };
