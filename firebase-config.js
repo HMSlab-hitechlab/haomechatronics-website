@@ -1,13 +1,14 @@
 // Firebase Web config không phải là khóa bí mật. Quyền truy cập được bảo vệ bởi firestore.rules.
-// Thay các giá trị PASTE_* bằng cấu hình lấy từ Firebase Console > Project settings > Your apps.
+// Cấu hình Web app của project haomechatronicslab.
 window.LAB_CONFIG = {
   firebase: {
-    apiKey: 'PASTE_API_KEY',
-    authDomain: 'PASTE_PROJECT_ID.firebaseapp.com',
-    projectId: 'PASTE_PROJECT_ID',
-    storageBucket: 'PASTE_PROJECT_ID.firebasestorage.app',
-    messagingSenderId: 'PASTE_MESSAGING_SENDER_ID',
-    appId: 'PASTE_APP_ID'
+    apiKey: 'AIzaSyBCKoVT05yCWh4CA8UJNGGDZaSns42vdNI',
+    authDomain: 'haomechatronicslab.firebaseapp.com',
+    projectId: 'haomechatronicslab',
+    storageBucket: 'haomechatronicslab.firebasestorage.app',
+    messagingSenderId: '268530035350',
+    appId: '1:268530035350:web:13bc5a75673dcd8508b0b7',
+    measurementId: 'G-F8KL7EB4Q6'
   },
   // Sửa đúng tên miền email Google Workspace for Education của trường/phòng Lab.
   allowedDomains: ['st.vlute.edu.vn'],
