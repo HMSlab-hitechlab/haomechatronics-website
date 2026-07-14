@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrapAdmin() {
+      // Thay đúng email này trước khi deploy. Phải giống firebase-config.js.
+      return signedIn() && request.auth.token.email == 'ADMIN_EMAIL@vlute.edu.vn';
+    }
+
+    function allowedDomain() {
+      // Sửa tên miền tại đây nếu trường dùng tên miền khác.
+      return signedIn() && request.auth.token.email.matches('.*@vlute\\.edu\\.vn$');
+    }
+
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function approved() {
+      return signedIn() && profile().status == 'approved';
+    }
+
+    function admin() {
+      return approved() && profile().role == 'admin';
+    }
+
+    match /users/{userId} {
+      allow get: if signedIn() && (request.auth.uid == userId || admin());
+      allow list: if admin();
+      allow create: if signedIn() && allowedDomain() && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && (
+          (request.resource.data.role == 'user' && request.resource.data.status == 'pending')
+          || (isBootstrapAdmin() && request.resource.data.role == 'admin' && request.resource.data.status == 'approved')
+        );
+      allow update: if admin()
+        || (signedIn() && request.auth.uid == userId
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.role == resource.data.role
+          && request.resource.data.status == resource.data.status);
+      allow delete: if admin() && request.auth.uid != userId;
+    }
+
+    match /presence/{userId} {
+      allow read: if approved();
+      allow create, update: if approved() && request.auth.uid == userId
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email;
+      allow delete: if admin() || (signedIn() && request.auth.uid == userId);
+    }
+
+    match /attendance/{recordId} {
+      allow read: if approved();
+      allow create: if approved()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.type in ['in', 'out'];
+      allow update, delete: if admin();
+    }
+  }
+}

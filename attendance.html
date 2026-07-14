@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Đăng nhập và điểm danh thành viên Hitech Lab.">
+    <meta name="description" content="Đăng nhập Google và điểm danh thành viên Hitech Lab.">
     <title>Điểm danh | Hitech Lab</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="./style.css?v=20260712.5">
-    <link rel="stylesheet" href="./enhancements.css?v=20260712.5">
-    <link rel="stylesheet" href="./mps.css?v=20260712.12">
+    <link rel="stylesheet" href="./style.css?v=20260714.1">
+    <link rel="stylesheet" href="./enhancements.css?v=20260714.1">
+    <link rel="stylesheet" href="./mps.css?v=20260714.1">
+    <link rel="stylesheet" href="./auth.css?v=20260714.1">
 </head>
 <body class="attendance-page">
     <header class="site-header scrolled">
@@ -21,29 +22,73 @@
     <main>
         <section class="section attendance attendance-standalone">
             <div class="attendance-heading">
-                <div><span class="kicker">CHECK-IN HITECH LAB</span><h1>Điểm danh nhanh.</h1><p>Đăng nhập và ghi nhận thời gian có mặt tại Lab.</p></div>
+                <div><span class="kicker">CHECK-IN HITECH LAB</span><h1>Điểm danh phòng Lab.</h1><p>Đăng nhập bằng tài khoản Google giáo dục đã được quản trị viên phê duyệt.</p></div>
                 <div class="live-clock"><span id="liveTime">--:--</span><small id="liveDate">Đang tải...</small></div>
             </div>
-            <div class="attendance-layout">
-                <div class="login-panel" id="loginPanel">
-                    <div class="panel-icon">↳</div><h3>Đăng nhập thành viên</h3><p>Sử dụng email trong danh sách thành viên.</p>
-                    <form id="loginForm">
-                        <label>Email thành viên<input id="loginEmail" type="email" required placeholder="email@university.edu.vn" autocomplete="email"></label>
-                        <label>Mã PIN Lab<input id="loginPin" type="password" required inputmode="numeric" maxlength="4" placeholder="••••" autocomplete="current-password"></label>
-                        <button class="btn btn-primary" type="submit">Đăng nhập <span>→</span></button>
-                        <small class="login-hint">Mã PIN dùng thử: <b>2026</b></small>
-                    </form>
+
+            <div class="auth-setup hidden" id="setupNotice" role="alert"></div>
+
+            <section class="auth-gate" id="loginPanel">
+                <div class="google-mark" aria-hidden="true">G</div>
+                <h2>Đăng nhập thành viên</h2>
+                <p>Chỉ chấp nhận tài khoản Google thuộc tên miền giáo dục của phòng thí nghiệm.</p>
+                <button class="google-login" id="googleLoginBtn" type="button"><span>G</span> Tiếp tục bằng Google</button>
+                <small id="domainHint">Tài khoản mới cần được admin phê duyệt trước khi điểm danh.</small>
+            </section>
+
+            <section class="approval-card hidden" id="approvalPanel">
+                <div class="approval-icon" id="approvalIcon">⌛</div>
+                <span class="kicker">TRẠNG THÁI TÀI KHOẢN</span>
+                <h2 id="approvalTitle">Đang chờ phê duyệt</h2>
+                <p id="approvalMessage">Yêu cầu của bạn đã được gửi đến quản trị viên.</p>
+                <div class="account-summary"><img id="pendingAvatar" alt=""><div><strong id="pendingName"></strong><small id="pendingEmail"></small></div></div>
+                <button class="text-button" id="pendingLogoutBtn" type="button">Đăng xuất</button>
+            </section>
+
+            <div class="lab-app hidden" id="labApp">
+                <div class="signed-bar">
+                    <div class="signed-user"><img class="attendance-avatar photo" id="userAvatar" alt=""><div><small id="userAccessLabel">THÀNH VIÊN ĐÃ DUYỆT</small><h3 id="userName">Thành viên</h3><p id="userEmail"></p></div></div>
+                    <button class="text-button" id="logoutBtn" type="button">Đăng xuất</button>
                 </div>
-                <div class="checkin-panel hidden" id="checkinPanel">
-                    <div class="signed-user"><div class="attendance-avatar" id="attendanceAvatar">HL</div><div><small>ĐÃ ĐĂNG NHẬP</small><h3 id="attendanceName">Thành viên</h3><p id="attendanceRole"></p></div><button id="logoutBtn" type="button">Đăng xuất</button></div>
-                    <div class="presence-card"><span class="presence-dot"></span><div><small>TRẠNG THÁI HIỆN TẠI</small><strong id="presenceStatus">Chưa vào Lab</strong></div></div>
-                    <div class="check-actions"><button class="check-btn check-in" id="checkInBtn" type="button"><span>↓</span><div><b>Check-in</b><small>Xác nhận vào Lab</small></div></button><button class="check-btn check-out" id="checkOutBtn" type="button"><span>↑</span><div><b>Check-out</b><small>Xác nhận rời Lab</small></div></button></div>
-                </div>
-                <aside class="attendance-log"><div class="log-title"><div><small>HOẠT ĐỘNG HÔM NAY</small><h3>Lịch sử điểm danh</h3></div><span id="todayCount">0 lượt</span></div><div id="attendanceList" class="attendance-list"><div class="empty-log">Chưa có hoạt động điểm danh.</div></div></aside>
+
+                <section class="admin-panel hidden" id="adminPanel">
+                    <div class="admin-heading"><div><span class="kicker">QUẢN TRỊ TÀI KHOẢN</span><h2>Phê duyệt thành viên.</h2></div><div class="request-count" id="requestCount">0 chờ duyệt</div></div>
+                    <div class="account-filters" role="group" aria-label="Lọc tài khoản">
+                        <button class="account-filter active" data-status="all" type="button">Tất cả</button>
+                        <button class="account-filter" data-status="pending" type="button">Chờ duyệt</button>
+                        <button class="account-filter" data-status="approved" type="button">Đã duyệt</button>
+                        <button class="account-filter" data-status="rejected" type="button">Từ chối</button>
+                    </div>
+                    <div class="account-list" id="accountList"></div>
+                </section>
+
+                <section class="lab-dashboard">
+                    <div class="lab-map-card">
+                        <div class="map-heading"><div><span class="kicker">SƠ ĐỒ TRỰC TUYẾN</span><h2>Ai đang ở Lab?</h2></div><span class="online-count" id="onlineCount">0 người</span></div>
+                        <div class="lab-map" id="labMap" aria-label="Sơ đồ vị trí phòng Lab">
+                            <button class="lab-zone zone-robot" data-zone="robot" type="button"><strong>Khu Robot</strong><small>MPS · Robot arm</small><span class="zone-people"></span></button>
+                            <button class="lab-zone zone-design" data-zone="design" type="button"><strong>Khu thiết kế</strong><small>CAD · Simulation</small><span class="zone-people"></span></button>
+                            <button class="lab-zone zone-electronics" data-zone="electronics" type="button"><strong>Bàn điện tử</strong><small>IoT · Embedded</small><span class="zone-people"></span></button>
+                            <button class="lab-zone zone-meeting" data-zone="meeting" type="button"><strong>Bàn họp</strong><small>Trao đổi nhóm</small><span class="zone-people"></span></button>
+                            <div class="lab-entry">LỐI VÀO</div>
+                        </div>
+                        <p class="map-help" id="mapHelp">Chọn khu vực bạn đang làm việc, sau đó nhấn Check-in.</p>
+                    </div>
+
+                    <aside class="checkin-card">
+                        <span class="kicker">ĐIỂM DANH CỦA TÔI</span>
+                        <div class="presence-card"><span class="presence-dot"></span><div><small>TRẠNG THÁI HIỆN TẠI</small><strong id="presenceStatus">Chưa vào Lab</strong><span id="presenceZone"></span></div></div>
+                        <label class="zone-select">Vị trí làm việc<select id="zoneSelect"><option value="">Chọn khu vực...</option><option value="robot">Khu Robot</option><option value="design">Khu thiết kế</option><option value="electronics">Bàn điện tử</option><option value="meeting">Bàn họp</option></select></label>
+                        <div class="check-actions vertical"><button class="check-btn check-in" id="checkInBtn" type="button"><span>↓</span><div><b>Check-in</b><small>Xác nhận vào Lab</small></div></button><button class="check-btn check-out" id="checkOutBtn" type="button"><span>↑</span><div><b>Check-out</b><small>Xác nhận rời Lab</small></div></button></div>
+                    </aside>
+                </section>
+
+                <section class="attendance-log full-log"><div class="log-title"><div><small>HOẠT ĐỘNG HÔM NAY</small><h3>Lịch sử điểm danh</h3></div><span id="todayCount">0 lượt</span></div><div id="attendanceList" class="attendance-list"><div class="empty-log">Chưa có hoạt động điểm danh.</div></div></section>
             </div>
         </section>
     </main>
     <div class="toast" id="toast" role="status"></div>
-    <script src="./attendance.js?v=20260712.12"></script>
+    <script src="./firebase-config.js?v=20260714.1"></script>
+    <script type="module" src="./attendance.js?v=20260714.1"></script>
 </body>
 </html>
