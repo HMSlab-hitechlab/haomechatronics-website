@@ -66,3 +66,91 @@
 @media(max-width:600px){
   .booking-zone-picker{grid-template-columns:1fr}
 }
+
+/* Responsive polish for desktop, tablet and phone. */
+.lab-portal-page{overflow-x:hidden}
+.portal-shell,.portal-intro,.auth-gate,.approval-card,.lab-app,.admin-panel,.operations-summary,.booking-workspace,.lab-dashboard,.full-log{max-width:100%}
+.portal-intro>div:first-child,.signed-user>div,.section-heading-small>div,.map-heading>div,.admin-heading>div{min-width:0}
+.portal-intro h1,.portal-intro p,.signed-user h3,.signed-user p,.section-heading-small h2,.map-heading h2,.admin-heading h2{overflow-wrap:anywhere}
+.portal-clock{flex:0 0 auto;min-width:170px}
+.toast{max-width:min(430px,calc(100vw - 28px));white-space:normal;line-height:1.5;overflow-wrap:anywhere}
+
+@media(min-width:1400px){
+  .portal-shell{padding-top:145px!important}
+  .booking-form-card,.my-bookings-card,.lab-map-card,.checkin-card{padding:32px}
+  .booking-zone-picker button{min-height:98px}
+}
+
+@media(min-width:601px) and (max-width:900px){
+  .portal-intro{gap:24px}
+  .booking-workspace,.lab-dashboard{grid-template-columns:minmax(0,1fr)}
+  .operations-summary{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .operations-summary article{min-height:105px;padding:19px}
+  .booking-form{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .booking-submit{grid-column:1/-1}
+  .my-bookings-card{min-height:230px}
+}
+
+@media(max-width:700px){
+  .portal-intro{display:block;padding-bottom:24px}
+  .portal-clock{min-width:0;margin-top:22px}
+}
+
+@media(max-width:600px){
+  .booking-workspace,.lab-dashboard{grid-template-columns:minmax(0,1fr)}
+  .portal-shell{padding-top:88px!important;padding-bottom:64px!important}
+  .portal-intro{margin-bottom:20px;padding-bottom:20px}
+  .portal-intro h1{margin:7px 0 9px;font-size:clamp(38px,11vw,46px);line-height:1.02}
+  .portal-intro p{font-size:13px;line-height:1.6}
+  .portal-clock{gap:16px;margin-top:20px}
+  .portal-clock .live-clock span{font-size:29px}
+  .closing-note{font-size:8px;line-height:1.5}
+  .auth-gate,.approval-card{width:100%;margin:24px 0;padding:28px 18px;border-radius:20px}
+  .auth-gate h2,.approval-card h2{font-size:26px}
+  .auth-gate p,.approval-card p{font-size:13px}
+  .google-login{min-height:50px;padding:12px;font-size:14px}
+  .portal-userbar{gap:12px;padding:16px}
+  .portal-userbar .signed-user{min-width:0}
+  .portal-userbar .attendance-avatar{width:42px;height:42px;flex:0 0 42px}
+  .portal-userbar .text-button{flex:0 0 auto;font-size:11px}
+  .signed-user p{max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .operations-summary{gap:0;margin-bottom:16px}
+  .operations-summary article{min-height:78px;padding:14px 16px}
+  .operations-summary strong{margin:7px 0 3px;font-size:15px}
+  .admin-panel,.booking-form-card,.my-bookings-card,.lab-map-card,.checkin-card,.full-log{padding:18px}
+  .admin-heading,.map-heading,.section-heading-small{align-items:flex-start}
+  .admin-heading h2,.map-heading h2,.section-heading-small h2{font-size:23px;line-height:1.08}
+  .request-count,.online-count{flex:0 0 auto}
+  .account-filters{margin-top:18px;padding-bottom:3px}
+  .account-filter{min-height:40px;white-space:nowrap}
+  .booking-workspace,.lab-dashboard{gap:14px;margin-bottom:14px}
+  .section-description{margin:13px 0 18px}
+  .booking-zone-picker{gap:8px}
+  .booking-zone-picker button{min-height:76px;padding:13px}
+  .booking-form{gap:13px}
+  .booking-form input,.booking-form select,.zone-select select{height:48px;font-size:16px}
+  .booking-submit{min-height:50px}
+  .booking-list{max-height:none}
+  .my-bookings-card{min-height:190px}
+  .lab-map{height:auto;min-height:500px;margin-top:18px;padding:10px 10px 34px;border-width:5px;gap:8px}
+  .lab-zone{min-height:104px;padding:14px}
+  .lab-entry{right:30%;left:30%}
+  .checkin-card .presence-card{margin:17px 0}
+  .check-actions.vertical{gap:9px}
+  .check-btn{min-height:58px}
+  .full-log{margin-top:14px}
+  .log-item{grid-template-columns:9px minmax(0,1fr) auto}
+  .toast{right:14px;bottom:14px;left:14px;width:auto;text-align:center}
+}
+
+@media(max-width:380px){
+  .portal-shell{padding-right:10px!important;padding-left:10px!important}
+  .portal-intro h1{font-size:37px}
+  .attendance-nav span{padding:8px 10px;font-size:9px}
+  .portal-userbar{align-items:center}
+  .signed-user p{max-width:145px}
+  .admin-panel,.booking-form-card,.my-bookings-card,.lab-map-card,.checkin-card,.full-log{padding:15px}
+  .section-number{display:none}
+  .account-row{padding:10px}
+  .lab-map{min-height:470px}
+}
