@@ -154,3 +154,30 @@
   .account-row{padding:10px}
   .lab-map{min-height:470px}
 }
+
+/* Today's reservations are shown directly in their physical Lab zone. */
+.map-counts{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.today-booking-count,.online-count{padding:8px 11px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
+.today-booking-count{color:#8a4c08;background:#fff0d9}
+.zone-bookings{width:100%;margin-top:13px;display:grid;gap:6px;max-height:94px;overflow:auto;scrollbar-width:thin}
+.zone-booking{width:100%;min-width:0;padding:6px 8px;border:1px solid #e0e8ea;border-radius:10px;background:#f7fafb;display:flex;align-items:center;gap:8px}
+.zone-booking.checkedIn{border-color:#8bd1c3;background:#e8f7f3}
+.zone-booking.completed{opacity:.7}
+.zone-booking.noShow{border-color:#f0c5ca;background:#fff5f6}
+.zone-booking-avatar{width:26px;height:26px;flex:0 0 26px;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:#fff;background:var(--portal-navy);font-size:10px;font-weight:800}
+.zone-booking-avatar img{width:100%;height:100%;display:block;object-fit:cover}
+.zone-booking-info{min-width:0;display:flex;flex-direction:column}
+.zone-booking-info b{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px}
+.lab-zone .zone-booking-info small{margin-top:2px;color:var(--portal-muted);font-size:8px}
+.zone-bookings-empty{color:#99a8ae;font-size:9px}
+.lab-zone.booked{border-color:#9ebfc0}
+.zone-people{position:absolute;right:12px;bottom:10px;margin:0}
+
+@media(max-width:600px){
+  .map-heading{flex-direction:column}
+  .map-counts{width:100%;justify-content:flex-start}
+  .today-booking-count,.online-count{font-size:9px}
+  .lab-map{grid-template-rows:repeat(4,minmax(150px,auto))}
+  .lab-zone{min-height:150px;padding-bottom:42px}
+  .zone-bookings{max-height:76px}
+}

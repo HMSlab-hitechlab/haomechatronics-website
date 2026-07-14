@@ -196,11 +196,28 @@ async function reconcileOwnPresence() {
 }
 
 function renderMap() {
-  const online = presences.filter(item => presenceIsActive(item));
-  $('#onlineCount').textContent = `${online.length} người`;
+  const now = new Date();
+  const online = presences.filter(item => presenceIsActive(item, now));
+  const todayBookings = bookings.filter(booking => {
+    const start = timestampDate(booking.startAt);
+    return start && sameLocalDay(start, now) && bookingEffectiveStatus(booking, now) !== 'cancelled';
+  }).sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt));
+  $('#onlineCount').textContent = `${online.length} người đang ở Lab`;
+  $('#todayBookingCount').textContent = `${todayBookings.length} lịch hôm nay`;
   document.querySelectorAll('.lab-zone').forEach(zone => {
     const people = online.filter(item => item.zone === zone.dataset.zone);
+    const reservations = todayBookings.filter(item => item.zone === zone.dataset.zone);
     zone.classList.toggle('occupied', people.length > 0);
+    zone.classList.toggle('booked', reservations.length > 0);
+    zone.querySelector('.zone-bookings').innerHTML = reservations.length ? reservations.map(booking => {
+      const name = booking.displayName || booking.email || 'Thành viên';
+      const photo = safePhoto(booking.photoURL);
+      const initial = name.trim().charAt(0).toUpperCase() || 'U';
+      const status = bookingEffectiveStatus(booking, now);
+      const shortStatus = { reserved: 'Đã đặt', checkedIn: 'Đang dùng', completed: 'Hoàn thành', noShow: 'Vắng' }[status] || status;
+      const avatar = photo ? `<img src="${escapeText(photo)}" alt="">` : escapeText(initial);
+      return `<span class="zone-booking ${status}" title="${escapeText(name)} · ${formatTime(booking.startAt)}–${formatTime(booking.endAt)}"><span class="zone-booking-avatar">${avatar}</span><span class="zone-booking-info"><b>${escapeText(name)}</b><small>${formatTime(booking.startAt)}–${formatTime(booking.endAt)} · ${escapeText(shortStatus)}</small></span></span>`;
+    }).join('') : '<span class="zone-bookings-empty">Chưa có lịch hôm nay</span>';
     zone.querySelector('.zone-people').innerHTML = people.map(person => `<img src="${escapeText(safePhoto(person.photoURL))}" alt="${escapeText(person.displayName || 'Thành viên')}" title="${escapeText(person.displayName || 'Thành viên')}">`).join('');
   });
 }
@@ -221,6 +238,7 @@ function watchBookings() {
   unsubscribers.push(onSnapshot(query(collection(db, 'bookings'), orderBy('startAt', 'desc')), snapshot => {
     bookings = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
     renderBookings();
+    renderMap();
   }, error => notify(error.code === 'failed-precondition' ? 'Cần deploy Firestore index cho lịch đặt chỗ.' : `Không thể tải lịch đặt chỗ (${error.code}).`, true)));
 }
 
