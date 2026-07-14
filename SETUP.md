@@ -32,6 +32,8 @@ firebase deploy --only firestore
 
 Sau đó đưa các file website lên GitHub Pages. Đăng nhập admin trước, rồi người dùng đăng nhập để gửi yêu cầu phê duyệt.
 
+Mỗi khi file `firestore.rules` được cập nhật (ví dụ thêm tính năng đặt chỗ), cần chạy lại `firebase deploy --only firestore:rules` hoặc dán nội dung file vào tab **Firestore Database > Rules** và nhấn **Publish**.
+
 ## Lưu ý bảo mật
 
 `firebase-config.js` được phép công khai trên GitHub; đây là mã nhận diện Web app, không phải mật khẩu. Quyền đọc/ghi dữ liệu nằm trong `firestore.rules`. Không thêm service-account JSON hoặc private key vào repository.

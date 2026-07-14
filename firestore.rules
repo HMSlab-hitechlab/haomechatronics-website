@@ -42,15 +42,18 @@ service cloud.firestore {
           && request.resource.data.uid == resource.data.uid
           && request.resource.data.email == resource.data.email
           && request.resource.data.role == resource.data.role
-          && request.resource.data.status == resource.data.status);
+          && request.resource.data.status == resource.data.status
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['displayName', 'photoURL', 'lastLoginAt']));
       allow delete: if admin() && request.auth.uid != userId;
     }
 
     match /presence/{userId} {
       allow read: if approved();
-      allow create, update: if approved() && request.auth.uid == userId
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.email == request.auth.token.email;
+      allow create, update: if admin()
+        || (approved() && request.auth.uid == userId
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.email == request.auth.token.email);
       allow delete: if admin() || (signedIn() && request.auth.uid == userId);
     }
 
@@ -59,8 +62,36 @@ service cloud.firestore {
       allow create: if approved()
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.email == request.auth.token.email
-        && request.resource.data.type in ['in', 'out'];
+        && request.resource.data.type in ['in', 'out', 'auto-out'];
       allow update, delete: if admin();
+    }
+
+    match /bookings/{bookingId} {
+      allow read: if approved();
+      allow create: if approved()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.status == 'reserved'
+        && request.resource.data.zone in ['robot', 'design', 'electronics', 'meeting']
+        && request.resource.data.durationHours >= 1
+        && request.resource.data.durationHours <= 6
+        && request.resource.data.startAt < request.resource.data.endAt;
+      allow update: if admin()
+        || (approved()
+          && resource.data.uid == request.auth.uid
+          && request.resource.data.uid == resource.data.uid
+          && request.resource.data.email == resource.data.email
+          && request.resource.data.zone == resource.data.zone
+          && request.resource.data.startAt == resource.data.startAt
+          && request.resource.data.endAt == resource.data.endAt
+          && request.resource.data.durationHours == resource.data.durationHours
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['status', 'checkedInAt', 'checkedOutAt', 'cancelledAt', 'updatedAt'])
+          && (
+            (resource.data.status == 'reserved' && request.resource.data.status in ['cancelled', 'checkedIn'])
+            || (resource.data.status == 'checkedIn' && request.resource.data.status == 'completed')
+          ));
+      allow delete: if admin();
     }
   }
 }
