@@ -34,6 +34,10 @@ Sau đó đưa các file website lên GitHub Pages. Đăng nhập admin trước
 
 Mỗi khi file `firestore.rules` được cập nhật (ví dụ thêm tính năng đặt chỗ), cần chạy lại `firebase deploy --only firestore:rules` hoặc dán nội dung file vào tab **Firestore Database > Rules** và nhấn **Publish**.
 
+## 4. Ảnh đại diện thành viên
+
+Admin có thể chọn ảnh trực tiếp từ máy khi chỉnh thành viên. Trình duyệt tự thu nhỏ ảnh còn tối đa 256 px, chuyển sang WebP và giới hạn ảnh đã nén dưới 40 KB trước khi lưu cùng hồ sơ trên Firestore. File ảnh gốc lớn hơn 3 MB sẽ bị từ chối. Cách này hoạt động trên gói Spark và không yêu cầu bật Firebase Storage.
+
 ## Lưu ý bảo mật
 
 `firebase-config.js` được phép công khai trên GitHub; đây là mã nhận diện Web app, không phải mật khẩu. Quyền đọc/ghi dữ liệu nằm trong `firestore.rules`. Không thêm service-account JSON hoặc private key vào repository.

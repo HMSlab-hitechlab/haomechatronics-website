@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css?v=20260712.5">
-    <link rel="stylesheet" href="./enhancements.css?v=20260716.3">
+    <link rel="stylesheet" href="./enhancements.css?v=20260716.4">
     <link rel="stylesheet" href="./mps.css?v=20260712.11">
 </head>
 <body class="studio-page">
@@ -115,7 +115,12 @@
                 <label class="full">Chuyên môn<input id="memberSpecialty" required maxlength="100" placeholder="Robot tự hành & Điều khiển"></label>
                 <label>Email<input id="memberEmail" type="email" required placeholder="email@university.edu.vn"></label>
                 <label>Màu đại diện<input id="memberColor" type="color" value="#ea580c"></label>
-                <label class="full">Ảnh đại diện nhỏ (URL)<input id="memberPhoto" type="url" maxlength="500" placeholder="https://.../anh-dai-dien.jpg"></label>
+                <div class="member-photo-upload full">
+                    <img id="memberPhotoPreview" alt="Xem trước ảnh đại diện">
+                    <label>Ảnh đại diện<input id="memberPhotoFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+                    <input id="memberPhotoURL" type="hidden">
+                    <small id="memberPhotoStatus">Chọn JPG, PNG hoặc WebP. Ảnh gốc tối đa 3 MB; hệ thống tự thu nhỏ và nén ảnh còn tối đa 40 KB.</small>
+                </div>
             </div>
             <div class="modal-actions"><button type="button" class="btn cancel-modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu thành viên</button></div>
         </form>
@@ -136,6 +141,6 @@
     </dialog>
     <div class="toast" id="toast" role="status"></div>
     <script src="./firebase-config.js?v=20260714.3"></script>
-    <script type="module" src="./home.js?v=20260716.3"></script>
+    <script type="module" src="./home.js?v=20260716.4"></script>
 </body>
 </html>

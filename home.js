@@ -32,6 +32,10 @@ let ownedProjects = [];
 let adminProjects = [];
 let unsubscribers = [];
 let seedAttempted = false;
+let memberPreviewURL = '';
+const MAX_MEMBER_SOURCE_BYTES = 3 * 1024 * 1024;
+const MAX_MEMBER_STORED_BYTES = 40 * 1024;
+const MAX_MEMBER_DOCUMENT_CHARS = 850000;
 
 function approved() {
   return currentProfile?.status === 'approved';
@@ -64,6 +68,11 @@ function safePhoto(value = '') {
   } catch {
     return '';
   }
+}
+
+function safeMemberPhoto(value = '') {
+  if (typeof value === 'string' && value.startsWith('data:image/webp;base64,') && value.length <= 60000) return value;
+  return safePhoto(value);
 }
 
 function avatarData(name) {
@@ -115,7 +124,7 @@ function renderMembers() {
   });
   $('#memberCount').textContent = `${filtered.length} / ${members.length} THÀNH VIÊN`;
   $('#memberGrid').innerHTML = filtered.length ? filtered.map(member => {
-    const photo = safePhoto(member.photoURL);
+    const photo = safeMemberPhoto(member.photoURL);
     const avatar = photo ? `<img src="${escapeHTML(photo)}" alt="Ảnh của ${escapeHTML(member.name)}">` : initials(member.name);
     return `
     <article class="member-card" data-member-id="${escapeHTML(member.id)}">
@@ -129,13 +138,64 @@ function renderMembers() {
 }
 
 async function saveMembers(message) {
-  if (!isAdmin()) return notify('Chỉ admin được chỉnh sửa danh sách thành viên.', true);
+  if (!isAdmin()) {
+    notify('Chỉ admin được chỉnh sửa danh sách thành viên.', true);
+    return false;
+  }
   try {
     await setDoc(doc(db, 'siteContent', 'members'), { items: members, updatedAt: serverTimestamp(), updatedBy: currentUser.uid });
     notify(message);
+    return true;
   } catch (error) {
     notify(error.code === 'permission-denied' ? 'Chưa có quyền cập nhật thành viên. Hãy Publish firestore.rules mới.' : `Không thể lưu thành viên (${error.code}).`, true);
+    return false;
   }
+}
+
+function canvasBlob(canvas, quality) {
+  return new Promise((resolve, reject) => canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Không thể nén ảnh.')), 'image/webp', quality));
+}
+
+async function compressMemberPhoto(file) {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Chỉ chấp nhận ảnh JPG, PNG hoặc WebP.');
+  if (file.size > MAX_MEMBER_SOURCE_BYTES) throw new Error('Ảnh gốc vượt quá 3 MB. Hãy chọn ảnh nhỏ hơn.');
+  const bitmap = await createImageBitmap(file);
+  try {
+    let maxSide = 256;
+    let quality = .82;
+    let blob;
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+      canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+      const context = canvas.getContext('2d', { alpha: false });
+      context.fillStyle = '#ffffff';
+      context.fillRect(0, 0, canvas.width, canvas.height);
+      context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      blob = await canvasBlob(canvas, quality);
+      if (blob.size <= MAX_MEMBER_STORED_BYTES) return blob;
+      maxSide = Math.round(maxSide * .82);
+      quality = Math.max(.58, quality - .07);
+    }
+    throw new Error('Không thể nén ảnh xuống dưới 40 KB. Hãy chọn ảnh đơn giản hoặc nhỏ hơn.');
+  } finally {
+    bitmap.close?.();
+  }
+}
+
+function blobDataURL(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Không thể đọc ảnh đã nén.'));
+    reader.readAsDataURL(blob);
+  });
+}
+
+function setMemberPhotoPreview(url, label = '') {
+  $('#memberPhotoPreview').src = url || avatarData($('#memberName').value || 'Thành viên');
+  $('#memberPhotoStatus').textContent = label || 'Chọn JPG, PNG hoặc WebP. Ảnh gốc tối đa 3 MB; hệ thống tự thu nhỏ và nén ảnh còn tối đa 40 KB.';
 }
 
 function openMemberModal(member = null) {
@@ -149,7 +209,11 @@ function openMemberModal(member = null) {
   $('#memberSpecialty').value = member?.specialty || '';
   $('#memberEmail').value = member?.email || '';
   $('#memberColor').value = safeColor(member?.color);
-  $('#memberPhoto').value = safePhoto(member?.photoURL);
+  $('#memberPhotoFile').value = '';
+  $('#memberPhotoURL').value = safeMemberPhoto(member?.photoURL);
+  if (memberPreviewURL) URL.revokeObjectURL(memberPreviewURL);
+  memberPreviewURL = '';
+  setMemberPhotoPreview(safeMemberPhoto(member?.photoURL) || avatarData(member?.name || 'Thành viên'));
   $('#memberModal').showModal();
 }
 
@@ -338,7 +402,7 @@ document.querySelectorAll('.filter').forEach(button => button.addEventListener('
   renderMembers();
 }));
 
-$('#memberGrid').addEventListener('click', event => {
+$('#memberGrid').addEventListener('click', async event => {
   const button = event.target.closest('[data-member-action]');
   const card = event.target.closest('[data-member-id]');
   if (!button || !card || !isAdmin()) return;
@@ -347,18 +411,56 @@ $('#memberGrid').addEventListener('click', event => {
   if (button.dataset.memberAction === 'edit') openMemberModal(member);
   if (button.dataset.memberAction === 'delete' && confirm(`Xóa thành viên “${member.name}”?`)) {
     members = members.filter(item => item.id !== member.id);
-    saveMembers('Đã xóa thành viên.');
+    const saved = await saveMembers('Đã xóa thành viên.');
+    if (!saved) {
+      members = [...members, member];
+      renderMembers();
+    }
   }
 });
 
-$('#memberForm').addEventListener('submit', event => {
+$('#memberPhotoFile').addEventListener('change', event => {
+  const file = event.target.files?.[0];
+  if (memberPreviewURL) URL.revokeObjectURL(memberPreviewURL);
+  memberPreviewURL = '';
+  if (!file) return setMemberPhotoPreview($('#memberPhotoURL').value);
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > MAX_MEMBER_SOURCE_BYTES) {
+    event.target.value = '';
+    return setMemberPhotoPreview($('#memberPhotoURL').value, file.size > MAX_MEMBER_SOURCE_BYTES ? 'Ảnh vượt quá 3 MB. Hãy chọn ảnh nhỏ hơn.' : 'Chỉ chấp nhận JPG, PNG hoặc WebP.');
+  }
+  memberPreviewURL = URL.createObjectURL(file);
+  setMemberPhotoPreview(memberPreviewURL, `Đã chọn ${file.name} · ${(file.size / 1024 / 1024).toFixed(2)} MB. Ảnh sẽ được nén trước khi tải lên.`);
+});
+
+$('#memberForm').addEventListener('submit', async event => {
   event.preventDefault();
   if (!isAdmin()) return;
-  const id = $('#memberId').value;
-  const data = { id: id || `member-${Date.now()}`, name: $('#memberName').value.trim(), role: $('#memberRole').value, status: $('#memberStatus').value, specialty: $('#memberSpecialty').value.trim(), email: $('#memberEmail').value.trim(), color: safeColor($('#memberColor').value), photoURL: safePhoto($('#memberPhoto').value.trim()) };
-  members = id ? members.map(member => String(member.id) === id ? data : member) : [data, ...members];
-  $('#memberModal').close();
-  saveMembers(id ? 'Đã cập nhật thành viên.' : 'Đã thêm thành viên.');
+  const existingId = $('#memberId').value;
+  const id = existingId || `member-${Date.now()}`;
+  const oldPhotoURL = safeMemberPhoto($('#memberPhotoURL').value);
+  const file = $('#memberPhotoFile').files?.[0];
+  const submitButton = event.submitter || $('#memberForm button[type="submit"]');
+  const oldLabel = submitButton.textContent;
+  const previousMembers = members;
+  submitButton.disabled = true;
+  submitButton.textContent = file ? 'Đang nén ảnh...' : 'Đang lưu...';
+  try {
+    const photoURL = file ? await blobDataURL(await compressMemberPhoto(file)) : oldPhotoURL;
+    const data = { id, name: $('#memberName').value.trim(), role: $('#memberRole').value, status: $('#memberStatus').value, specialty: $('#memberSpecialty').value.trim(), email: $('#memberEmail').value.trim(), color: safeColor($('#memberColor').value), photoURL };
+    members = existingId ? members.map(member => String(member.id) === existingId ? data : member) : [data, ...members];
+    if (JSON.stringify(members).length > MAX_MEMBER_DOCUMENT_CHARS) throw new Error('Danh sách thành viên và ảnh đã gần giới hạn Firestore. Hãy xóa bớt ảnh cũ hoặc dùng ảnh nhỏ hơn.');
+    const saved = await saveMembers(existingId ? 'Đã cập nhật thành viên.' : 'Đã thêm thành viên.');
+    if (!saved) throw new Error('Không thể lưu hồ sơ thành viên.');
+    $('#memberModal').close();
+  } catch (error) {
+    members = previousMembers;
+    const message = error.message || `Không thể lưu ảnh (${error.code || 'unknown'}).`;
+    setMemberPhotoPreview(memberPreviewURL || oldPhotoURL, message);
+    notify(message, true);
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = oldLabel;
+  }
 });
 
 document.querySelectorAll('.close-modal,.cancel-modal').forEach(button => button.addEventListener('click', () => $('#memberModal').close()));
