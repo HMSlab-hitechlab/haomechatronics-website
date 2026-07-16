@@ -22,8 +22,6 @@ let presences = [];
 let accounts = [];
 let bookings = [];
 let classReports = [];
-let confirmedClassReports = [];
-let ownClassReports = [];
 let accountFilter = 'all';
 let authorizedUid = '';
 let autoClosing = false;
@@ -64,8 +62,6 @@ function resetSubscriptions() {
   presences = [];
   bookings = [];
   classReports = [];
-  confirmedClassReports = [];
-  ownClassReports = [];
   accounts = [];
 }
 
@@ -226,14 +222,21 @@ function renderMap() {
     const start = timestampDate(booking.startAt);
     return start && sameLocalDay(start, now) && bookingEffectiveStatus(booking, now) !== 'cancelled';
   }).sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt));
+  const todayClasses = classReports.filter(report => {
+    const start = timestampDate(report.startAt);
+    return start && sameLocalDay(start, now) && ['pending', 'confirmed'].includes(report.status);
+  }).sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt));
   $('#onlineCount').textContent = `${online.length} người đang ở Lab`;
-  $('#todayBookingCount').textContent = `${todayBookings.length} lịch hôm nay`;
+  $('#todayBookingCount').textContent = todayClasses.length ? `${todayClasses.length} ca học · ${todayBookings.length} lịch đặt` : `${todayBookings.length} lịch hôm nay`;
   document.querySelectorAll('.lab-zone').forEach(zone => {
     const people = online.filter(item => item.zone === zone.dataset.zone);
     const reservations = todayBookings.filter(item => item.zone === zone.dataset.zone);
+    const classBlocks = todayClasses.filter(report => classReportBlocksZone(report, zone.dataset.zone));
     zone.classList.toggle('occupied', people.length > 0);
     zone.classList.toggle('booked', reservations.length > 0);
-    zone.querySelector('.zone-bookings').innerHTML = reservations.length ? reservations.map(booking => {
+    zone.classList.toggle('class-blocked', classBlocks.length > 0);
+    const classMarkup = classBlocks.map(report => `<span class="zone-booking class-session ${escapeText(report.status)}"><span class="zone-booking-avatar">L</span><span class="zone-booking-info"><b>Có lớp học${report.status === 'pending' ? ' · chờ xác minh' : ''}</b><small>${formatTime(report.startAt)}–${formatTime(report.endAt)}</small></span></span>`).join('');
+    const bookingMarkup = reservations.map(booking => {
       const name = booking.displayName || booking.email || 'Thành viên';
       const photo = safePhoto(booking.photoURL);
       const initial = name.trim().charAt(0).toUpperCase() || 'U';
@@ -241,7 +244,8 @@ function renderMap() {
       const shortStatus = { reserved: 'Đã đặt', checkedIn: 'Đang dùng', completed: 'Hoàn thành', noShow: 'Vắng' }[status] || status;
       const avatar = photo ? `<img src="${escapeText(photo)}" alt="">` : escapeText(initial);
       return `<span class="zone-booking ${status}" title="${escapeText(name)} · ${formatTime(booking.startAt)}–${formatTime(booking.endAt)}"><span class="zone-booking-avatar">${avatar}</span><span class="zone-booking-info"><b>${escapeText(name)}</b><small>${formatTime(booking.startAt)}–${formatTime(booking.endAt)} · ${escapeText(shortStatus)}</small></span></span>`;
-    }).join('') : '<span class="zone-bookings-empty">Chưa có lịch hôm nay</span>';
+    }).join('');
+    zone.querySelector('.zone-bookings').innerHTML = classMarkup || bookingMarkup ? classMarkup + bookingMarkup : '<span class="zone-bookings-empty">Chưa có lịch hôm nay</span>';
     zone.querySelector('.zone-people').innerHTML = people.map(person => `<img src="${escapeText(safePhoto(person.photoURL))}" alt="${escapeText(person.displayName || 'Thành viên')}" title="${escapeText(person.displayName || 'Thành viên')}">`).join('');
   });
 }
@@ -386,6 +390,34 @@ function overlapsExisting(zone, start, end) {
   });
 }
 
+function classReportBlocksZone(report, zone) {
+  return ['classroom', 'wholeLab', zone].includes(report.location);
+}
+
+function overlapsClassReport(zone, start, end) {
+  return classReports.some(report => {
+    if (!['pending', 'confirmed'].includes(report.status) || !classReportBlocksZone(report, zone)) return false;
+    const classStart = timestampDate(report.startAt);
+    const classEnd = timestampDate(report.endAt);
+    return classStart && classEnd && start < classEnd && end > classStart;
+  });
+}
+
+function updateBookingZoneAvailability() {
+  const { start, end } = bookingDatesFromForm();
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return;
+  document.querySelectorAll('[data-booking-zone]').forEach(button => {
+    const blocked = overlapsClassReport(button.dataset.bookingZone, start, end);
+    button.disabled = blocked;
+    button.classList.toggle('class-blocked', blocked);
+    button.title = blocked ? 'Khu vực có lớp học trong thời gian này' : '';
+    if (blocked && $('#bookingZone').value === button.dataset.bookingZone) {
+      $('#bookingZone').value = '';
+      button.classList.remove('selected');
+    }
+  });
+}
+
 async function createBooking(event) {
   event.preventDefault();
   const policy = policyState();
@@ -396,6 +428,7 @@ async function createBooking(event) {
   if (!zone || Number.isNaN(start.getTime())) return notify('Vui lòng nhập đầy đủ thông tin lịch.', true);
   if (start < now) return notify('Thời gian bắt đầu phải ở tương lai.', true);
   if (start.getHours() < 7 || end > closingTime(start)) return notify('Lịch sử dụng phải nằm trong khung 07:00–22:00.', true);
+  if (overlapsClassReport(zone, start, end)) return notify('Không thể đặt chỗ: khu vực này đang được báo có lớp học.', true);
   if (overlapsExisting(zone, start, end)) return notify('Khu vực này đã có người đặt trong khung giờ đã chọn.', true);
   try {
     await addDoc(collection(db, 'bookings'), {
@@ -458,32 +491,17 @@ function watchAttendance() {
   }, error => notify(error.code === 'failed-precondition' ? 'Firestore đang tạo chỉ mục nhật ký.' : `Không thể tải nhật ký (${error.code}).`, true)));
 }
 
-function mergeClassReports() {
-  const merged = new Map([...confirmedClassReports, ...ownClassReports].map(item => [item.id, item]));
-  classReports = [...merged.values()];
-  renderClassReports();
-}
-
 function watchClassReports() {
-  if (currentProfile?.role === 'admin') {
-    unsubscribers.push(onSnapshot(collection(db, 'classReports'), snapshot => {
-      classReports = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-      renderClassReports();
-    }, error => notify(`Không thể tải báo cáo lớp học (${error.code}).`, true)));
-    return;
-  }
-  unsubscribers.push(onSnapshot(query(collection(db, 'classReports'), where('status', '==', 'confirmed')), snapshot => {
-    confirmedClassReports = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-    mergeClassReports();
-  }, error => notify(`Không thể tải thông báo lớp học (${error.code}).`, true)));
-  unsubscribers.push(onSnapshot(query(collection(db, 'classReports'), where('reporterUid', '==', currentUser.uid)), snapshot => {
-    ownClassReports = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
-    mergeClassReports();
-  }, error => notify(`Không thể tải báo cáo của bạn (${error.code}).`, true)));
+  unsubscribers.push(onSnapshot(collection(db, 'classReports'), snapshot => {
+    classReports = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    renderClassReports();
+    renderMap();
+    updateBookingZoneAvailability();
+  }, error => notify(`Không thể tải báo cáo lớp học (${error.code}). Hãy Publish firestore.rules mới.`, true)));
 }
 
 function classReportStatusLabel(status) {
-  return { pending: 'Chờ admin duyệt', confirmed: 'Đã xác nhận', rejected: 'Báo cáo sai' }[status] || status;
+  return { pending: 'Có lớp · chờ xác minh', confirmed: 'Đã xác nhận', rejected: 'Báo cáo sai' }[status] || status;
 }
 
 function renderClassReports() {
@@ -491,14 +509,14 @@ function renderClassReports() {
   const cutoff = new Date(now.getTime() - 7 * 86400000);
   const visible = classReports.filter(item => {
     const end = timestampDate(item.endAt);
-    return end && end > cutoff && (item.status === 'confirmed' || item.reporterUid === currentUser?.uid);
+    return end && end > cutoff && (['pending', 'confirmed'].includes(item.status) || item.reporterUid === currentUser?.uid);
   }).sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt));
-  const confirmedUpcoming = classReports.filter(item => item.status === 'confirmed' && timestampDate(item.endAt) > now);
-  const activeCount = confirmedUpcoming.filter(item => timestampDate(item.startAt) <= now).length;
-  $('#classLiveCount').textContent = activeCount ? `${activeCount} đang học` : `${confirmedUpcoming.length} lịch`;
+  const blockingUpcoming = classReports.filter(item => ['pending', 'confirmed'].includes(item.status) && timestampDate(item.endAt) > now);
+  const activeCount = blockingUpcoming.filter(item => timestampDate(item.startAt) <= now).length;
+  $('#classLiveCount').textContent = activeCount ? `${activeCount} đang học` : `${blockingUpcoming.length} lịch`;
   $('#classReportList').innerHTML = visible.length ? visible.map(item => {
     const own = item.reporterUid === currentUser?.uid;
-    const active = item.status === 'confirmed' && timestampDate(item.startAt) <= now && timestampDate(item.endAt) > now;
+    const active = ['pending', 'confirmed'].includes(item.status) && timestampDate(item.startAt) <= now && timestampDate(item.endAt) > now;
     return `<article class="class-report-item ${escapeText(item.status)}${active ? ' active' : ''}"><div class="class-report-head"><strong>${escapeText(classLocations[item.location] || item.location)}</strong><span class="class-report-status ${escapeText(item.status)}">${active ? 'Đang có lớp' : escapeText(classReportStatusLabel(item.status))}</span></div><p><b>${formatDate(item.startAt)}</b> · ${formatTime(item.startAt)}–${formatTime(item.endAt)}</p>${item.note ? `<small>${escapeText(item.note)}</small>` : ''}<footer>Báo bởi ${escapeText(own ? 'bạn' : item.reporterName || item.reporterEmail || 'Thành viên')}</footer></article>`;
   }).join('') : '<div class="empty-log">Chưa có báo cáo lớp học.</div>';
 
@@ -665,10 +683,11 @@ $('#classReviewList').addEventListener('click', event => {
 });
 $('#bookingZonePicker').addEventListener('click', event => {
   const button = event.target.closest('[data-booking-zone]');
-  if (!button) return;
+  if (!button || button.disabled) return;
   $('#bookingZone').value = button.dataset.bookingZone;
   document.querySelectorAll('[data-booking-zone]').forEach(item => item.classList.toggle('selected', item === button));
 });
+['#bookingDate', '#bookingStart', '#bookingDuration'].forEach(selector => $(selector).addEventListener('change', updateBookingZoneAvailability));
 $('#bookingList').addEventListener('click', event => { const item = event.target.closest('[data-booking-id]'); if (item && event.target.closest('.cancel-booking')) cancelBooking(item.dataset.bookingId); });
 $('#checkInBtn').addEventListener('click', () => recordAttendance('in'));
 $('#checkOutBtn').addEventListener('click', () => recordAttendance('out'));

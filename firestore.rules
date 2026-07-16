@@ -105,9 +105,8 @@ service cloud.firestore {
     }
 
     match /classReports/{reportId} {
-      allow read: if admin()
-        || (approved() && (resource.data.status == 'confirmed'
-          || resource.data.reporterUid == request.auth.uid));
+      // Báo cáo chờ xác minh cũng được mọi thành viên xem để chặn đặt trùng ca học.
+      allow read: if approved();
       allow create: if approved()
         && request.resource.data.keys().hasOnly(['reporterUid', 'reporterEmail', 'reporterName', 'reporterPhotoURL', 'location', 'session', 'date', 'startAt', 'endAt', 'note', 'status', 'createdAt', 'updatedAt'])
         && request.resource.data.reporterUid == request.auth.uid
