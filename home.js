@@ -267,11 +267,16 @@ function openProjectModal(project = null) {
 
 async function saveProject(event) {
   event.preventDefault();
-  if (!approved()) return;
+  if (!currentUser) return notify('Bạn cần đăng nhập trước khi lưu dự án.', true);
+  if (!approved()) return notify('Tài khoản chưa được admin phê duyệt nên chưa thể đăng dự án.', true);
   const id = $('#projectId').value;
   const existing = id ? findProject(id) : null;
   const status = isAdmin() ? $('#projectStatus').value : 'draft';
   const content = { title: $('#projectTitle').value.trim(), category: $('#projectCategory').value, description: $('#projectDescription').value.trim(), updatedAt: serverTimestamp() };
+  const submitButton = $('#projectSubmitBtn');
+  const originalLabel = submitButton.textContent;
+  submitButton.disabled = true;
+  submitButton.textContent = 'Đang lưu vào Firebase...';
   try {
     if (existing) {
       const ownDraft = existing.ownerUid === currentUser.uid && existing.status === 'draft';
@@ -284,7 +289,17 @@ async function saveProject(event) {
     }
     $('#projectModal').close();
   } catch (error) {
-    notify(error.code === 'permission-denied' ? 'Không có quyền lưu dự án. Hãy kiểm tra quyền hoặc Publish firestore.rules mới.' : `Không thể lưu dự án (${error.code}).`, true);
+    console.error('Firebase project save failed', error);
+    const message = error.code === 'permission-denied'
+      ? 'Firebase đã kết nối nhưng Rules chưa cho phép lưu. Vào Firestore Database → Rules, dán file firestore.rules mới và nhấn Publish.'
+      : error.code === 'unavailable'
+        ? 'Không thể kết nối Firebase. Hãy kiểm tra mạng rồi thử lại.'
+        : `Không thể lưu dự án lên Firebase (${error.code || 'unknown'}).`;
+    $('#projectFormNote').textContent = message;
+    notify(message, true);
+  } finally {
+    submitButton.disabled = false;
+    submitButton.textContent = originalLabel;
   }
 }
 

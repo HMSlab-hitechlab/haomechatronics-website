@@ -37,7 +37,8 @@
 .header-account-copy{min-width:0;display:flex;flex-direction:column;line-height:1.2}
 .header-account-copy strong{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dark);font-size:10px}
 .header-account-copy small{margin-top:2px;color:var(--muted);font-size:7px}
-.header-account>button{width:31px;height:31px;flex:0 0 31px;border:0;border-radius:50%;color:#fff;background:var(--dark);cursor:pointer}
+.header-account>button{min-width:76px;height:32px;flex:0 0 auto;padding:0 12px;border:0;border-radius:999px;color:#fff;background:var(--dark);font-size:9px;font-weight:700;cursor:pointer;transition:.2s}
+.header-account>button:hover{background:var(--accent)}
 .project-intro-actions{max-width:430px;display:flex;flex-direction:column;align-items:flex-start;gap:18px}
 .project-intro-actions p{margin:0;color:var(--muted);font-size:16px;line-height:1.7}
 .content-loading{grid-column:1/-1;padding:80px 20px;text-align:center;color:var(--muted)}
@@ -71,7 +72,7 @@
   .site-header>.header-account{right:60px}
   .header-account-copy{display:none}
   .header-account img{width:32px;height:32px;flex-basis:32px}
-  .header-account>button{width:30px;height:30px;flex-basis:30px}
+  .header-account>button{min-width:68px;height:30px;padding:0 10px}
   .project-intro-actions{gap:14px}
   .project-intro-actions p{font-size:14px}
   .project-intro-actions .btn{width:100%}
@@ -82,4 +83,7 @@
 
 @media(max-width:430px){
   .site-header>.header-account{right:54px}
+  .header-account{gap:5px;padding-right:4px}
+  .header-account img{display:none}
+  .header-account>button{min-width:66px}
 }
