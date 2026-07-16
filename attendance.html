@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./style.css?v=20260714.3">
     <link rel="stylesheet" href="./enhancements.css?v=20260714.3">
     <link rel="stylesheet" href="./mps.css?v=20260714.3">
-    <link rel="stylesheet" href="./auth.css?v=20260716.7">
+    <link rel="stylesheet" href="./auth.css?v=20260716.8">
 </head>
 <body class="attendance-page lab-portal-page">
     <header class="site-header scrolled portal-header">
@@ -141,6 +141,7 @@
                 <section class="lab-dashboard">
                     <div class="lab-map-card">
                         <div class="map-heading"><div><span class="kicker">TRẠNG THÁI KHÔNG GIAN</span><h2>Hiện diện và lịch hôm nay</h2></div><div class="map-counts"><span class="today-booking-count" id="todayBookingCount">0 lịch hôm nay</span><span class="online-count" id="onlineCount">0 người đang ở Lab</span></div></div>
+                        <div class="map-class-notices hidden" id="mapClassNotices" role="status"></div>
                         <div class="lab-map" id="labMap" aria-label="Sơ đồ vị trí phòng Lab">
                             <button class="lab-zone zone-robot" data-zone="robot" type="button"><strong>Khu Robot & MPS</strong><small>Robot arm · Automation</small><span class="zone-bookings"></span><span class="zone-people"></span></button>
                             <button class="lab-zone zone-design" data-zone="design" type="button"><strong>Khu thiết kế CAD</strong><small>CAD · Simulation</small><span class="zone-bookings"></span><span class="zone-people"></span></button>
@@ -168,6 +169,6 @@
     </main>
     <div class="toast" id="toast" role="status"></div>
     <script src="./firebase-config.js?v=20260714.3"></script>
-    <script type="module" src="./attendance.js?v=20260716.7"></script>
+    <script type="module" src="./attendance.js?v=20260716.8"></script>
 </body>
 </html>

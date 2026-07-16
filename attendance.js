@@ -228,6 +228,13 @@ function renderMap() {
   }).sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt));
   $('#onlineCount').textContent = `${online.length} người đang ở Lab`;
   $('#todayBookingCount').textContent = todayClasses.length ? `${todayClasses.length} ca học · ${todayBookings.length} lịch đặt` : `${todayBookings.length} lịch hôm nay`;
+  const classNotices = $('#mapClassNotices');
+  classNotices.classList.toggle('hidden', !todayClasses.length);
+  classNotices.innerHTML = todayClasses.map(report => {
+    const session = classSessions[report.session]?.label || 'Ca học';
+    const status = report.status === 'pending' ? 'Chờ admin xác minh' : 'Đã xác nhận';
+    return `<article class="map-class-notice ${escapeText(report.status)}"><span class="map-class-icon">LỚP</span><div><strong>Có lớp học · ${escapeText(classLocations[report.location] || report.location)}</strong><small>${escapeText(session)} · ${formatTime(report.startAt)}–${formatTime(report.endAt)} · ${escapeText(status)}</small></div></article>`;
+  }).join('');
   document.querySelectorAll('.lab-zone').forEach(zone => {
     const people = online.filter(item => item.zone === zone.dataset.zone);
     const reservations = todayBookings.filter(item => item.zone === zone.dataset.zone);

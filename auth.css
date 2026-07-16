@@ -161,6 +161,10 @@
 .map-counts{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 .today-booking-count,.online-count{padding:8px 11px;border-radius:999px;font-size:10px;font-weight:800;white-space:nowrap}
 .today-booking-count{color:#8a4c08;background:#fff0d9}
+.map-class-notices{display:grid;gap:8px;margin-top:18px}
+.map-class-notice{padding:12px 14px;border:1px solid #efb18a;border-radius:13px;background:#fff2e9;display:flex;align-items:center;gap:12px;color:#713815}
+.map-class-notice.pending{border-style:dashed}.map-class-icon{width:42px;height:32px;flex:0 0 42px;border-radius:9px;background:#d76628;color:#fff;display:grid;place-items:center;font-size:8px;font-weight:900;letter-spacing:.08em}
+.map-class-notice div{min-width:0;display:flex;flex-direction:column}.map-class-notice strong{font-size:11px}.map-class-notice small{margin-top:4px;color:#96613e;font-size:9px}
 .zone-bookings{width:100%;margin-top:13px;display:grid;gap:6px;max-height:94px;overflow:auto;scrollbar-width:thin}
 .zone-booking{width:100%;min-width:0;padding:6px 8px;border:1px solid #e0e8ea;border-radius:10px;background:#f7fafb;display:flex;align-items:center;gap:8px}
 .zone-booking.checkedIn{border-color:#8bd1c3;background:#e8f7f3}
@@ -183,6 +187,7 @@
   .lab-map{grid-template-rows:repeat(4,minmax(150px,auto))}
   .lab-zone{min-height:150px;padding-bottom:42px}
   .zone-bookings{max-height:76px}
+  .map-class-notice{align-items:flex-start}.map-class-notice strong{font-size:10px}.map-class-notice small{line-height:1.45}
 }
 
 /* Classroom occupancy reports */
