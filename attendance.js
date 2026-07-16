@@ -1,12 +1,13 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js';
 import { getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithPopup, signOut } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js';
-import { addDoc, collection, doc, getDoc, getFirestore, onSnapshot, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, where } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
+import { addDoc, collection, doc, getDoc, getFirestore, increment, onSnapshot, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, where, writeBatch } from 'https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js';
 
 const config = window.LAB_CONFIG || {};
 const firebaseReady = config.firebase && !Object.values(config.firebase).some(value => !value || String(value).includes('PASTE_'));
 const zones = { robot: 'Khu Robot & MPS', design: 'Khu thiết kế CAD', electronics: 'Bàn điện tử & IoT', meeting: 'Bàn họp nhóm' };
 const statusLabels = { reserved: 'Đã đặt', checkedIn: 'Đang sử dụng', completed: 'Hoàn thành', cancelled: 'Đã hủy', noShow: 'Vắng mặt' };
 const NO_SHOW_LIMIT = 3;
+const classLocations = { classroom: 'Phòng học / khu vực giảng dạy', wholeLab: 'Toàn bộ phòng Lab', robot: 'Khu Robot & MPS', design: 'Khu thiết kế CAD', electronics: 'Bàn điện tử & IoT', meeting: 'Bàn họp nhóm' };
 const LOCK_HOURS = 24;
 const CLOSING_HOUR = 22;
 const $ = selector => document.querySelector(selector);
@@ -19,6 +20,9 @@ let currentProfile;
 let presences = [];
 let accounts = [];
 let bookings = [];
+let classReports = [];
+let confirmedClassReports = [];
+let ownClassReports = [];
 let accountFilter = 'all';
 let authorizedUid = '';
 let autoClosing = false;
@@ -58,6 +62,9 @@ function resetSubscriptions() {
   authorizedUid = '';
   presences = [];
   bookings = [];
+  classReports = [];
+  confirmedClassReports = [];
+  ownClassReports = [];
   accounts = [];
 }
 
@@ -114,14 +121,30 @@ function renderAuthorized(user, profile) {
   $('#userEmail').textContent = user.email;
   $('#userAccessLabel').textContent = profile.role === 'admin' ? 'QUẢN TRỊ VIÊN' : 'THÀNH VIÊN ĐÃ DUYỆT';
   $('#adminPanel').classList.toggle('hidden', profile.role !== 'admin');
+  $('#classReviewPanel').classList.toggle('hidden', profile.role !== 'admin');
+  renderAccountWarning(profile);
   if (authorizedUid === user.uid) return;
   authorizedUid = user.uid;
   initializeBookingDefaults();
+  initializeClassReportDefaults();
   scheduleClosingReconciliation();
   watchPresence();
   watchBookings();
   watchAttendance();
+  watchClassReports();
   if (profile.role === 'admin') watchAccounts();
+}
+
+function renderAccountWarning(profile = {}) {
+  const warning = $('#accountWarning');
+  const count = Number(profile.classReportWarningCount || 0);
+  if (!count) {
+    warning.classList.add('hidden');
+    warning.textContent = '';
+    return;
+  }
+  warning.textContent = `Cảnh báo tài khoản: ${profile.classReportWarning || 'Báo cáo lớp học của bạn đã bị admin xác định không chính xác.'} Tổng cộng ${count} lần cảnh báo.`;
+  warning.classList.remove('hidden');
 }
 
 function localDateKey(date = new Date()) {
@@ -434,6 +457,133 @@ function watchAttendance() {
   }, error => notify(error.code === 'failed-precondition' ? 'Firestore đang tạo chỉ mục nhật ký.' : `Không thể tải nhật ký (${error.code}).`, true)));
 }
 
+function mergeClassReports() {
+  const merged = new Map([...confirmedClassReports, ...ownClassReports].map(item => [item.id, item]));
+  classReports = [...merged.values()];
+  renderClassReports();
+}
+
+function watchClassReports() {
+  if (currentProfile?.role === 'admin') {
+    unsubscribers.push(onSnapshot(collection(db, 'classReports'), snapshot => {
+      classReports = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+      renderClassReports();
+    }, error => notify(`Không thể tải báo cáo lớp học (${error.code}).`, true)));
+    return;
+  }
+  unsubscribers.push(onSnapshot(query(collection(db, 'classReports'), where('status', '==', 'confirmed')), snapshot => {
+    confirmedClassReports = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    mergeClassReports();
+  }, error => notify(`Không thể tải thông báo lớp học (${error.code}).`, true)));
+  unsubscribers.push(onSnapshot(query(collection(db, 'classReports'), where('reporterUid', '==', currentUser.uid)), snapshot => {
+    ownClassReports = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
+    mergeClassReports();
+  }, error => notify(`Không thể tải báo cáo của bạn (${error.code}).`, true)));
+}
+
+function classReportStatusLabel(status) {
+  return { pending: 'Chờ admin duyệt', confirmed: 'Đã xác nhận', rejected: 'Báo cáo sai' }[status] || status;
+}
+
+function renderClassReports() {
+  const now = new Date();
+  const cutoff = new Date(now.getTime() - 7 * 86400000);
+  const visible = classReports.filter(item => {
+    const end = timestampDate(item.endAt);
+    return end && end > cutoff && (item.status === 'confirmed' || item.reporterUid === currentUser?.uid);
+  }).sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt));
+  const confirmedUpcoming = classReports.filter(item => item.status === 'confirmed' && timestampDate(item.endAt) > now);
+  const activeCount = confirmedUpcoming.filter(item => timestampDate(item.startAt) <= now).length;
+  $('#classLiveCount').textContent = activeCount ? `${activeCount} đang học` : `${confirmedUpcoming.length} lịch`;
+  $('#classReportList').innerHTML = visible.length ? visible.map(item => {
+    const own = item.reporterUid === currentUser?.uid;
+    const active = item.status === 'confirmed' && timestampDate(item.startAt) <= now && timestampDate(item.endAt) > now;
+    return `<article class="class-report-item ${escapeText(item.status)}${active ? ' active' : ''}"><div class="class-report-head"><strong>${escapeText(classLocations[item.location] || item.location)}</strong><span class="class-report-status ${escapeText(item.status)}">${active ? 'Đang có lớp' : escapeText(classReportStatusLabel(item.status))}</span></div><p><b>${formatDate(item.startAt)}</b> · ${formatTime(item.startAt)}–${formatTime(item.endAt)}</p>${item.note ? `<small>${escapeText(item.note)}</small>` : ''}<footer>Báo bởi ${escapeText(own ? 'bạn' : item.reporterName || item.reporterEmail || 'Thành viên')}</footer></article>`;
+  }).join('') : '<div class="empty-log">Chưa có báo cáo lớp học.</div>';
+
+  if (currentProfile?.role !== 'admin') return;
+  const pending = classReports.filter(item => item.status === 'pending').sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt));
+  $('#classReviewCount').textContent = `${pending.length} chờ duyệt`;
+  $('#classReviewList').innerHTML = pending.length ? pending.map(item => `<article class="class-review-item" data-report-id="${item.id}" data-reporter-uid="${escapeText(item.reporterUid)}"><div><strong>${escapeText(classLocations[item.location] || item.location)}</strong><p>${formatDate(item.startAt)} · ${formatTime(item.startAt)}–${formatTime(item.endAt)}</p><small>${escapeText(item.reporterName || item.reporterEmail || 'Thành viên')}${item.note ? ` · ${escapeText(item.note)}` : ''}</small></div><div class="class-review-actions"><button data-review="confirm" type="button">Thông tin đúng</button><button data-review="reject" type="button">Báo sai · cảnh báo</button></div></article>`).join('') : '<div class="empty-log">Không có báo cáo chờ duyệt.</div>';
+}
+
+function initializeClassReportDefaults() {
+  const now = new Date();
+  const max = new Date(now.getTime() + 30 * 86400000);
+  const start = new Date(now);
+  start.setMinutes(start.getMinutes() < 30 ? 30 : 60, 0, 0);
+  if (start.getHours() >= 21) {
+    start.setDate(start.getDate() + 1);
+    start.setHours(8, 0, 0, 0);
+  }
+  const end = new Date(start.getTime() + 90 * 60000);
+  $('#classDate').min = localDateKey(now);
+  $('#classDate').max = localDateKey(max);
+  $('#classDate').value = localDateKey(start);
+  $('#classStart').value = start.toTimeString().slice(0, 5);
+  $('#classEnd').value = end.toTimeString().slice(0, 5);
+}
+
+async function createClassReport(event) {
+  event.preventDefault();
+  const date = $('#classDate').value;
+  const start = new Date(`${date}T${$('#classStart').value}:00`);
+  const end = new Date(`${date}T${$('#classEnd').value}:00`);
+  const location = $('#classLocation').value;
+  const note = $('#classNote').value.trim();
+  if (!classLocations[location] || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return notify('Vui lòng nhập đầy đủ thông tin lớp học.', true);
+  if (end <= start) return notify('Giờ kết thúc phải sau giờ bắt đầu.', true);
+  if (end <= new Date()) return notify('Thời gian lớp học đã kết thúc.', true);
+  if (start.getHours() < 7 || end > closingTime(start) || end.getTime() - start.getTime() > 8 * 3600000) return notify('Lịch lớp học phải trong khung 07:00–22:00 và không quá 8 giờ.', true);
+  try {
+    await addDoc(collection(db, 'classReports'), {
+      reporterUid: currentUser.uid,
+      reporterEmail: currentUser.email,
+      reporterName: currentUser.displayName || 'Thành viên',
+      reporterPhotoURL: currentUser.photoURL || '',
+      location,
+      date,
+      startAt: Timestamp.fromDate(start),
+      endAt: Timestamp.fromDate(end),
+      note,
+      status: 'pending',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    });
+    $('#classNote').value = '';
+    notify('Đã gửi báo cáo. Admin sẽ kiểm tra trước khi công bố.');
+  } catch (error) {
+    notify(error.code === 'permission-denied' ? 'Chưa có quyền gửi báo cáo. Hãy Publish file firestore.rules mới.' : `Không thể gửi báo cáo (${error.code || 'unknown'}).`, true);
+  }
+}
+
+async function reviewClassReport(reportId, decision) {
+  const report = classReports.find(item => item.id === reportId && item.status === 'pending');
+  if (!report || currentProfile?.role !== 'admin') return;
+  if (decision === 'reject' && !window.confirm('Xác nhận báo cáo này là sai và ghi cảnh báo vào tài khoản người gửi?')) return;
+  try {
+    const batch = writeBatch(db);
+    batch.update(doc(db, 'classReports', reportId), {
+      status: decision === 'confirm' ? 'confirmed' : 'rejected',
+      reviewedAt: serverTimestamp(),
+      reviewedBy: currentUser.uid,
+      updatedAt: serverTimestamp()
+    });
+    if (decision === 'reject') {
+      batch.update(doc(db, 'users', report.reporterUid), {
+        classReportWarningCount: increment(1),
+        classReportWarning: `Báo cáo lớp học ngày ${formatDate(report.startAt)} tại ${classLocations[report.location] || report.location} không chính xác.`,
+        classReportWarnedAt: serverTimestamp(),
+        classReportWarnedBy: currentUser.uid
+      });
+    }
+    await batch.commit();
+    notify(decision === 'confirm' ? 'Đã xác nhận và công bố lịch lớp học.' : 'Đã từ chối báo cáo và cảnh báo người gửi.');
+  } catch (error) {
+    notify(`Không thể duyệt báo cáo (${error.code || 'unknown'}).`, true);
+  }
+}
+
 function watchAccounts() {
   unsubscribers.push(onSnapshot(collection(db, 'users'), snapshot => {
     accounts = snapshot.docs.map(item => ({ id: item.id, ...item.data() }));
@@ -505,6 +655,12 @@ $('#googleLoginBtn').addEventListener('click', async () => {
 
 ['#logoutBtn', '#pendingLogoutBtn'].forEach(selector => $(selector).addEventListener('click', () => signOut(auth)));
 $('#bookingForm').addEventListener('submit', createBooking);
+$('#classReportForm').addEventListener('submit', createClassReport);
+$('#classReviewList').addEventListener('click', event => {
+  const button = event.target.closest('[data-review]');
+  const item = event.target.closest('[data-report-id]');
+  if (button && item) reviewClassReport(item.dataset.reportId, button.dataset.review);
+});
 $('#bookingZonePicker').addEventListener('click', event => {
   const button = event.target.closest('[data-booking-zone]');
   if (!button) return;

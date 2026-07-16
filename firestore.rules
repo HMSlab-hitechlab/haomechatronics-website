@@ -104,6 +104,27 @@ service cloud.firestore {
       allow delete: if admin();
     }
 
+    match /classReports/{reportId} {
+      allow read: if admin()
+        || (approved() && (resource.data.status == 'confirmed'
+          || resource.data.reporterUid == request.auth.uid));
+      allow create: if approved()
+        && request.resource.data.keys().hasOnly(['reporterUid', 'reporterEmail', 'reporterName', 'reporterPhotoURL', 'location', 'date', 'startAt', 'endAt', 'note', 'status', 'createdAt', 'updatedAt'])
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reporterEmail == request.auth.token.email
+        && request.resource.data.reporterName is string
+        && request.resource.data.reporterPhotoURL is string
+        && request.resource.data.status == 'pending'
+        && request.resource.data.location in ['classroom', 'wholeLab', 'robot', 'design', 'electronics', 'meeting']
+        && request.resource.data.date is string
+        && request.resource.data.startAt is timestamp
+        && request.resource.data.endAt is timestamp
+        && request.resource.data.startAt < request.resource.data.endAt
+        && request.resource.data.note is string
+        && request.resource.data.note.size() <= 200;
+      allow update, delete: if admin();
+    }
+
     // Nội dung danh sách thành viên trên trang chủ: thành viên đã duyệt được xem,
     // chỉ admin được thêm, sửa hoặc xóa.
     match /siteContent/{contentId} {

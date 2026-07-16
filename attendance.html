@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="./style.css?v=20260714.3">
     <link rel="stylesheet" href="./enhancements.css?v=20260714.3">
     <link rel="stylesheet" href="./mps.css?v=20260714.3">
-    <link rel="stylesheet" href="./auth.css?v=20260714.7">
+    <link rel="stylesheet" href="./auth.css?v=20260716.5">
 </head>
 <body class="attendance-page lab-portal-page">
     <header class="site-header scrolled portal-header">
@@ -51,6 +51,7 @@
                     <div class="signed-user"><img class="attendance-avatar photo" id="userAvatar" alt=""><div><small id="userAccessLabel">THÀNH VIÊN ĐÃ DUYỆT</small><h3 id="userName">Thành viên</h3><p id="userEmail"></p></div></div>
                     <button class="text-button" id="logoutBtn" type="button">Đăng xuất</button>
                 </div>
+                <div class="account-warning hidden" id="accountWarning" role="alert"></div>
 
                 <div class="operations-summary" aria-label="Tổng quan sử dụng Lab">
                     <article><small>HIỆN DIỆN</small><strong id="summaryPresence">Chưa check-in</strong><span id="summaryPresenceMeta">Ngoài phòng Lab</span></article>
@@ -67,6 +68,40 @@
                         <button class="account-filter" data-status="rejected" type="button">Từ chối</button>
                     </div>
                     <div class="account-list" id="accountList"></div>
+                </section>
+
+                <section class="classroom-workspace" aria-label="Báo cáo lịch học tại phòng Lab">
+                    <div class="class-report-card">
+                        <div class="section-heading-small"><div><span class="kicker">THÔNG TIN PHÒNG HỌC</span><h2>Báo phòng đang có lớp</h2></div><span class="section-number">A</span></div>
+                        <p class="section-description">Mọi thành viên có thể báo lịch học để người khác chủ động sắp xếp khu vực nghiên cứu. Vui lòng chỉ gửi thông tin đã kiểm tra.</p>
+                        <form class="class-report-form" id="classReportForm">
+                            <label>Khu vực
+                                <select id="classLocation" required>
+                                    <option value="classroom">Phòng học / khu vực giảng dạy</option>
+                                    <option value="wholeLab">Toàn bộ phòng Lab</option>
+                                    <option value="robot">Khu Robot &amp; MPS</option>
+                                    <option value="design">Khu thiết kế CAD</option>
+                                    <option value="electronics">Bàn điện tử &amp; IoT</option>
+                                    <option value="meeting">Bàn họp nhóm</option>
+                                </select>
+                            </label>
+                            <label>Ngày có lớp<input id="classDate" type="date" required></label>
+                            <label>Giờ bắt đầu<input id="classStart" type="time" min="07:00" max="21:30" step="1800" required></label>
+                            <label>Giờ kết thúc<input id="classEnd" type="time" min="07:30" max="22:00" step="1800" required></label>
+                            <label class="class-note-field">Ghi chú (không bắt buộc)<textarea id="classNote" maxlength="200" rows="3" placeholder="Ví dụ: Lớp Robot công nghiệp, khoảng 30 sinh viên"></textarea></label>
+                            <button class="booking-submit" id="classReportSubmit" type="submit">Gửi báo cáo cho admin <span>→</span></button>
+                        </form>
+                    </div>
+                    <aside class="class-status-card">
+                        <div class="section-heading-small"><div><span class="kicker">THÔNG BÁO CHUNG</span><h2>Lịch lớp học</h2></div><span class="class-live-count" id="classLiveCount">0 lịch</span></div>
+                        <div class="class-report-list" id="classReportList"><div class="empty-log">Chưa có báo cáo lớp học.</div></div>
+                    </aside>
+                </section>
+
+                <section class="class-review-panel hidden" id="classReviewPanel">
+                    <div class="admin-heading"><div><span class="kicker">ADMIN · KIỂM DUYỆT BÁO CÁO</span><h2>Xác minh lịch lớp học</h2></div><div class="request-count" id="classReviewCount">0 chờ duyệt</div></div>
+                    <p>Chọn <strong>Thông tin đúng</strong> để công bố cho thành viên. Nếu chọn <strong>Báo sai</strong>, hệ thống sẽ ghi cảnh báo vào tài khoản người gửi.</p>
+                    <div class="class-review-list" id="classReviewList"><div class="empty-log">Không có báo cáo chờ duyệt.</div></div>
                 </section>
 
                 <section class="booking-workspace">
@@ -127,6 +162,6 @@
     </main>
     <div class="toast" id="toast" role="status"></div>
     <script src="./firebase-config.js?v=20260714.3"></script>
-    <script type="module" src="./attendance.js?v=20260714.7"></script>
+    <script type="module" src="./attendance.js?v=20260716.5"></script>
 </body>
 </html>
