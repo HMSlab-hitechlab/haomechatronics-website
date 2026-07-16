@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./style.css?v=20260712.5">
-    <link rel="stylesheet" href="./enhancements.css?v=20260714.2">
+    <link rel="stylesheet" href="./enhancements.css?v=20260716.1">
     <link rel="stylesheet" href="./mps.css?v=20260712.11">
 </head>
 <body class="studio-page">
@@ -28,7 +28,12 @@
             <a href="attendance.html">Đặt lịch</a>
             <a href="#members">Thành viên</a>
         </nav>
-        <a class="header-cta" href="attendance.html">Đăng nhập</a>
+        <a class="header-cta" id="homeLoginLink" href="attendance.html">Đăng nhập</a>
+        <div class="header-account hidden" id="headerAccount">
+            <img id="homeUserAvatar" alt="">
+            <a class="header-account-copy" href="attendance.html"><strong id="homeUserName">Thành viên</strong><small id="homeUserRole">Tài khoản</small></a>
+            <button id="homeLogoutBtn" type="button" title="Đăng xuất" aria-label="Đăng xuất">↗</button>
+        </div>
     </header>
 
     <main>
@@ -64,17 +69,8 @@
         </section>
 
         <section class="section projects-simple" id="projects">
-            <div class="split-heading reveal"><div><span class="kicker">DỰ ÁN NỔI BẬT</span><h2>Được tạo ra<br>tại Hitech Lab.</h2></div><p>Mỗi dự án là một vòng lặp của thiết kế, chế tạo, thử nghiệm và cải tiến.</p></div>
-            <div class="project-showcase">
-                <article class="showcase-card reveal">
-                    <div class="showcase-art art-robot"><div class="mini-bot">AMR</div><span>01 — ROBOTICS</span></div>
-                    <div class="showcase-copy"><h3>Robot tự hành trong nhà</h3><p>Định vị, lập bản đồ và tránh vật cản theo thời gian thực.</p></div>
-                </article>
-                <article class="showcase-card reveal">
-                    <div class="showcase-art art-vision"><div class="vision-lens"></div><span>02 — COMPUTER VISION</span></div>
-                    <div class="showcase-copy"><h3>Kiểm tra sản phẩm bằng AI</h3><p>Phát hiện sai hỏng tự động trên dây chuyền sản xuất.</p></div>
-                </article>
-            </div>
+            <div class="split-heading reveal"><div><span class="kicker">DỰ ÁN NỔI BẬT</span><h2>Được tạo ra<br>tại Hitech Lab.</h2></div><div class="project-intro-actions"><p>Mỗi dự án là một vòng lặp của thiết kế, chế tạo, thử nghiệm và cải tiến.</p><button class="btn btn-primary hidden" id="addProjectBtn" type="button">＋ Đăng dự án</button></div></div>
+            <div class="project-showcase" id="projectShowcase"><div class="content-loading">Đang tải dự án...</div></div>
         </section>
 
         <section class="section attendance" id="attendance">
@@ -85,7 +81,7 @@
         </section>
 
         <section class="section members" id="members">
-            <div class="members-header reveal"><div><span class="kicker">ĐỘI NGŨ</span><h2>Thành viên Hitech Lab.</h2><p>Cùng học hỏi, thử nghiệm và tạo ra những sản phẩm có ích.</p></div><button class="btn btn-primary" id="addMemberBtn">＋ Thêm thành viên</button></div>
+            <div class="members-header reveal"><div><span class="kicker">ĐỘI NGŨ</span><h2>Thành viên Hitech Lab.</h2><p>Cùng học hỏi, thử nghiệm và tạo ra những sản phẩm có ích.</p></div><button class="btn btn-primary hidden" id="addMemberBtn">＋ Thêm thành viên</button></div>
             <div class="member-toolbar reveal">
                 <label class="search-box"><span>⌕</span><input id="memberSearch" type="search" placeholder="Tìm thành viên..."></label>
                 <div class="filter-group" role="group" aria-label="Lọc thành viên"><button class="filter active" data-filter="Tất cả">Tất cả</button><button class="filter" data-filter="Giảng viên">Giảng viên</button><button class="filter" data-filter="Nghiên cứu viên">Nghiên cứu viên</button><button class="filter" data-filter="Sinh viên">Sinh viên</button></div>
@@ -123,7 +119,22 @@
             <div class="modal-actions"><button type="button" class="btn cancel-modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu thành viên</button></div>
         </form>
     </dialog>
+    <dialog id="projectModal">
+        <form id="projectForm" method="dialog">
+            <div class="modal-head"><div><span class="kicker">HỒ SƠ DỰ ÁN</span><h3 id="projectModalTitle">Đăng dự án mới</h3></div><button type="button" class="close-project-modal" aria-label="Đóng">×</button></div>
+            <input type="hidden" id="projectId">
+            <div class="form-grid">
+                <label class="full">Tên dự án<input id="projectTitle" required maxlength="100" placeholder="Robot tự hành trong nhà"></label>
+                <label>Chủ đề<select id="projectCategory" required><option>Robotics</option><option>Computer Vision</option><option>Automation</option><option>IoT & Embedded</option><option>Thiết kế Cơ điện tử</option><option>Khác</option></select></label>
+                <label class="admin-project-status hidden">Trạng thái<select id="projectStatus"><option value="draft">Chờ công bố</option><option value="published">Đã công bố</option></select></label>
+                <label class="full">Mô tả<textarea id="projectDescription" required maxlength="500" rows="5" placeholder="Mô tả mục tiêu và kết quả chính của dự án..."></textarea></label>
+            </div>
+            <p class="project-form-note" id="projectFormNote">Dự án của thành viên sẽ được gửi cho admin duyệt trước khi công bố.</p>
+            <div class="modal-actions"><button type="button" class="btn cancel-project-modal">Hủy</button><button type="submit" class="btn btn-primary">Lưu dự án</button></div>
+        </form>
+    </dialog>
     <div class="toast" id="toast" role="status"></div>
-    <script src="./script.js?v=20260712.5"></script>
+    <script src="./firebase-config.js?v=20260714.3"></script>
+    <script type="module" src="./home.js?v=20260716.1"></script>
 </body>
 </html>

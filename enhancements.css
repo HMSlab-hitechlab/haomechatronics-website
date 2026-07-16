@@ -30,3 +30,56 @@
   .site-header .brand strong{font-size:14px}
   .site-header>.header-cta{padding:8px 12px;font-size:11px}
 }
+
+/* Firebase account and role-based homepage management. */
+.header-account{display:flex;align-items:center;gap:9px;min-width:0;padding:5px 6px 5px 5px;border:1px solid var(--line);border-radius:999px;background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.06)}
+.header-account img{width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;background:#172b36}
+.header-account-copy{min-width:0;display:flex;flex-direction:column;line-height:1.2}
+.header-account-copy strong{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dark);font-size:10px}
+.header-account-copy small{margin-top:2px;color:var(--muted);font-size:7px}
+.header-account>button{width:31px;height:31px;flex:0 0 31px;border:0;border-radius:50%;color:#fff;background:var(--dark);cursor:pointer}
+.project-intro-actions{max-width:430px;display:flex;flex-direction:column;align-items:flex-start;gap:18px}
+.project-intro-actions p{margin:0;color:var(--muted);font-size:16px;line-height:1.7}
+.content-loading{grid-column:1/-1;padding:80px 20px;text-align:center;color:var(--muted)}
+.project-managed-card{position:relative}
+.dynamic-project-art{background:linear-gradient(145deg,#162a35,#263f49)}
+.project-monogram{z-index:2;width:116px;height:116px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.28);border-radius:28px;color:#fff;background:rgba(255,255,255,.08);box-shadow:0 24px 50px rgba(0,0,0,.24);font-size:27px;font-weight:800;letter-spacing:-.05em}
+.project-state{position:absolute;z-index:3;top:18px;right:18px;padding:7px 10px;border-radius:999px;font-size:8px;font-weight:800}
+.project-state.draft{color:#8a4c08;background:#fff0d9}
+.project-state.published{color:#08735f;background:#dff7ef}
+.project-owner{display:block;margin-top:14px;color:#8a989e;font-size:9px}
+.project-card-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:18px;padding-top:15px;border-top:1px solid var(--line)}
+.project-card-actions button{padding:8px 11px;border:1px solid var(--line);border-radius:9px;color:var(--dark);background:#fff;font-size:9px;font-weight:700;cursor:pointer}
+.project-card-actions button:hover{border-color:var(--dark)}
+.project-card-actions button.danger{color:#b42335;border-color:#f0cbd0;background:#fff7f8}
+#projectForm{padding:30px}
+#projectForm textarea{display:block;width:100%;margin-top:6px;padding:12px;border:1px solid var(--line);border-radius:11px;resize:vertical;outline-color:var(--accent);font:inherit}
+.close-project-modal{border:0;background:none;color:#82929a;font-size:27px;cursor:pointer}
+.project-form-note{margin:18px 0 0;padding:12px 14px;border-radius:12px;color:#73510e;background:#fff7e8;font-size:10px;line-height:1.6}
+.toast.error{background:#bd3445}
+
+@media(pointer:coarse){
+  .member-card .card-actions{opacity:1}
+}
+
+@media(max-width:900px){
+  .project-intro-actions{max-width:none;margin-top:20px}
+  .site-header>.header-account{position:absolute;right:62px}
+}
+
+@media(max-width:600px){
+  .site-header>.header-account{right:60px}
+  .header-account-copy{display:none}
+  .header-account img{width:32px;height:32px;flex-basis:32px}
+  .header-account>button{width:30px;height:30px;flex-basis:30px}
+  .project-intro-actions{gap:14px}
+  .project-intro-actions p{font-size:14px}
+  .project-intro-actions .btn{width:100%}
+  .project-state{top:13px;right:13px}
+  #projectForm{padding:22px 18px}
+  .project-card-actions button{min-height:40px;flex:1}
+}
+
+@media(max-width:430px){
+  .site-header>.header-account{right:54px}
+}

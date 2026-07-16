@@ -27,6 +27,16 @@ service cloud.firestore {
       return approved() && profile().role == 'admin';
     }
 
+    function validProject() {
+      return request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() > 0
+        && request.resource.data.description.size() <= 500
+        && request.resource.data.category in ['Robotics', 'Computer Vision', 'Automation', 'IoT & Embedded', 'Thiết kế Cơ điện tử', 'Khác'];
+    }
+
     match /users/{userId} {
       allow get: if signedIn() && (request.auth.uid == userId || admin());
       allow list: if admin();
@@ -92,6 +102,42 @@ service cloud.firestore {
             || (resource.data.status == 'checkedIn' && request.resource.data.status == 'completed')
           ));
       allow delete: if admin();
+    }
+
+    // Nội dung danh sách thành viên trên trang chủ: thành viên đã duyệt được xem,
+    // chỉ admin được thêm, sửa hoặc xóa.
+    match /siteContent/{contentId} {
+      allow read: if approved();
+      allow create, update, delete: if admin();
+    }
+
+    // User gửi dự án ở trạng thái nháp và chỉ sửa/xóa dự án nháp của chính mình.
+    // Chỉ admin được công bố, gỡ công bố hoặc quản lý mọi dự án.
+    match /projects/{projectId} {
+      allow read: if resource.data.status == 'published'
+        || (approved() && (admin() || resource.data.ownerUid == request.auth.uid));
+      allow create: if approved()
+        && request.resource.data.ownerUid == request.auth.uid
+        && request.resource.data.ownerEmail == request.auth.token.email
+        && validProject()
+        && (
+          request.resource.data.status == 'draft'
+          || (admin() && request.resource.data.status == 'published')
+        );
+      allow update: if admin()
+        || (approved()
+          && validProject()
+          && resource.data.ownerUid == request.auth.uid
+          && resource.data.status == 'draft'
+          && request.resource.data.ownerUid == resource.data.ownerUid
+          && request.resource.data.ownerEmail == resource.data.ownerEmail
+          && request.resource.data.status == 'draft'
+          && request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['title', 'category', 'description', 'updatedAt']));
+      allow delete: if admin()
+        || (approved()
+          && resource.data.ownerUid == request.auth.uid
+          && resource.data.status == 'draft');
     }
   }
 }
