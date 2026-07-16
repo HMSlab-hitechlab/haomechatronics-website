@@ -58,6 +58,9 @@
 .close-project-modal{border:0;background:none;color:#82929a;font-size:27px;cursor:pointer}
 .project-form-note{margin:18px 0 0;padding:12px 14px;border-radius:12px;color:#73510e;background:#fff7e8;font-size:10px;line-height:1.6}
 .toast.error{background:#bd3445}
+.member-card h3{color:var(--dark)}
+.member-card .avatar{overflow:hidden;flex:0 0 52px;color:#111}
+.member-card .avatar img{width:100%;height:100%;display:block;object-fit:cover}
 
 @media(pointer:coarse){
   .member-card .card-actions{opacity:1}

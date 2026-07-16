@@ -114,14 +114,18 @@ function renderMembers() {
     return matchesFilter && `${member.name} ${member.specialty} ${member.email}`.toLocaleLowerCase('vi').includes(keyword);
   });
   $('#memberCount').textContent = `${filtered.length} / ${members.length} THÀNH VIÊN`;
-  $('#memberGrid').innerHTML = filtered.length ? filtered.map(member => `
+  $('#memberGrid').innerHTML = filtered.length ? filtered.map(member => {
+    const photo = safePhoto(member.photoURL);
+    const avatar = photo ? `<img src="${escapeHTML(photo)}" alt="Ảnh của ${escapeHTML(member.name)}">` : initials(member.name);
+    return `
     <article class="member-card" data-member-id="${escapeHTML(member.id)}">
       ${isAdmin() ? `<div class="card-actions"><button type="button" data-member-action="edit" title="Chỉnh sửa">✎</button><button type="button" data-member-action="delete" title="Xóa">×</button></div>` : ''}
-      <div class="member-top"><div class="avatar" style="background:${safeColor(member.color)}">${initials(member.name)}</div><div><h3>${escapeHTML(member.name)}</h3><span class="role">${escapeHTML(member.role)}</span></div></div>
+      <div class="member-top"><div class="avatar" style="background:${safeColor(member.color)}">${avatar}</div><div><h3>${escapeHTML(member.name)}</h3><span class="role">${escapeHTML(member.role)}</span></div></div>
       <p class="specialty">${escapeHTML(member.specialty)}</p>
       <a class="email" href="mailto:${escapeHTML(member.email)}">${escapeHTML(member.email)}</a><br>
       <span class="status ${member.status === 'Tạm vắng' ? 'away' : ''}">${escapeHTML(member.status)}</span>
-    </article>`).join('') : '<div class="empty-state"><b>Không tìm thấy thành viên</b>Hãy thử từ khóa hoặc bộ lọc khác.</div>';
+    </article>`;
+  }).join('') : '<div class="empty-state"><b>Không tìm thấy thành viên</b>Hãy thử từ khóa hoặc bộ lọc khác.</div>';
 }
 
 async function saveMembers(message) {
@@ -145,6 +149,7 @@ function openMemberModal(member = null) {
   $('#memberSpecialty').value = member?.specialty || '';
   $('#memberEmail').value = member?.email || '';
   $('#memberColor').value = safeColor(member?.color);
+  $('#memberPhoto').value = safePhoto(member?.photoURL);
   $('#memberModal').showModal();
 }
 
@@ -350,7 +355,7 @@ $('#memberForm').addEventListener('submit', event => {
   event.preventDefault();
   if (!isAdmin()) return;
   const id = $('#memberId').value;
-  const data = { id: id || `member-${Date.now()}`, name: $('#memberName').value.trim(), role: $('#memberRole').value, status: $('#memberStatus').value, specialty: $('#memberSpecialty').value.trim(), email: $('#memberEmail').value.trim(), color: safeColor($('#memberColor').value) };
+  const data = { id: id || `member-${Date.now()}`, name: $('#memberName').value.trim(), role: $('#memberRole').value, status: $('#memberStatus').value, specialty: $('#memberSpecialty').value.trim(), email: $('#memberEmail').value.trim(), color: safeColor($('#memberColor').value), photoURL: safePhoto($('#memberPhoto').value.trim()) };
   members = id ? members.map(member => String(member.id) === id ? data : member) : [data, ...members];
   $('#memberModal').close();
   saveMembers(id ? 'Đã cập nhật thành viên.' : 'Đã thêm thành viên.');
