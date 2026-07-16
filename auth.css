@@ -230,7 +230,9 @@
 .class-report-status.rejected{background:#ffe7e9;color:var(--portal-danger)}
 .class-report-item p{margin:9px 0 5px;color:var(--portal-muted);font-size:10px}
 .class-report-item>small{display:block;color:#435e69;font-size:10px;line-height:1.5}
-.class-report-item footer{margin-top:10px;color:#91a0a6;font-size:8px}
+.class-report-item footer{margin-top:10px;color:#91a0a6;font-size:8px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.delete-class-report{padding:6px 8px;border:0;border-radius:8px;background:#ffe5e7;color:var(--portal-danger);font-size:8px;font-weight:800;cursor:pointer}
+.delete-class-report:hover{background:var(--portal-danger);color:#fff}
 .class-review-panel{margin-bottom:20px;padding:28px;border-radius:18px;background:var(--portal-navy);color:#fff}
 .class-review-panel>p{margin:12px 0 20px;color:#b7c7cd;font-size:11px;line-height:1.6}
 .class-review-list{display:grid;gap:8px}

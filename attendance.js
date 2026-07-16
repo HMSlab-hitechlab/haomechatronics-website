@@ -524,13 +524,14 @@ function renderClassReports() {
   $('#classReportList').innerHTML = visible.length ? visible.map(item => {
     const own = item.reporterUid === currentUser?.uid;
     const active = ['pending', 'confirmed'].includes(item.status) && timestampDate(item.startAt) <= now && timestampDate(item.endAt) > now;
-    return `<article class="class-report-item ${escapeText(item.status)}${active ? ' active' : ''}"><div class="class-report-head"><strong>${escapeText(classLocations[item.location] || item.location)}</strong><span class="class-report-status ${escapeText(item.status)}">${active ? 'Đang có lớp' : escapeText(classReportStatusLabel(item.status))}</span></div><p><b>${formatDate(item.startAt)}</b> · ${formatTime(item.startAt)}–${formatTime(item.endAt)}</p>${item.note ? `<small>${escapeText(item.note)}</small>` : ''}<footer>Báo bởi ${escapeText(own ? 'bạn' : item.reporterName || item.reporterEmail || 'Thành viên')}</footer></article>`;
+    const adminDelete = currentProfile?.role === 'admin' ? `<button class="delete-class-report" data-delete-report="${item.id}" type="button">Xóa tin giả</button>` : '';
+    return `<article class="class-report-item ${escapeText(item.status)}${active ? ' active' : ''}"><div class="class-report-head"><strong>${escapeText(classLocations[item.location] || item.location)}</strong><span class="class-report-status ${escapeText(item.status)}">${active ? 'Đang có lớp' : escapeText(classReportStatusLabel(item.status))}</span></div><p><b>${formatDate(item.startAt)}</b> · ${formatTime(item.startAt)}–${formatTime(item.endAt)}</p>${item.note ? `<small>${escapeText(item.note)}</small>` : ''}<footer><span>Báo bởi ${escapeText(own ? 'bạn' : item.reporterName || item.reporterEmail || 'Thành viên')}</span>${adminDelete}</footer></article>`;
   }).join('') : '<div class="empty-log">Chưa có báo cáo lớp học.</div>';
 
   if (currentProfile?.role !== 'admin') return;
   const pending = classReports.filter(item => item.status === 'pending').sort((a, b) => timestampDate(a.startAt) - timestampDate(b.startAt));
   $('#classReviewCount').textContent = `${pending.length} chờ duyệt`;
-  $('#classReviewList').innerHTML = pending.length ? pending.map(item => `<article class="class-review-item" data-report-id="${item.id}" data-reporter-uid="${escapeText(item.reporterUid)}"><div><strong>${escapeText(classLocations[item.location] || item.location)}</strong><p>${formatDate(item.startAt)} · ${formatTime(item.startAt)}–${formatTime(item.endAt)}</p><small>${escapeText(item.reporterName || item.reporterEmail || 'Thành viên')}${item.note ? ` · ${escapeText(item.note)}` : ''}</small></div><div class="class-review-actions"><button data-review="confirm" type="button">Thông tin đúng</button><button data-review="reject" type="button">Báo sai · cảnh báo</button></div></article>`).join('') : '<div class="empty-log">Không có báo cáo chờ duyệt.</div>';
+  $('#classReviewList').innerHTML = pending.length ? pending.map(item => `<article class="class-review-item" data-report-id="${item.id}" data-reporter-uid="${escapeText(item.reporterUid)}"><div><strong>${escapeText(classLocations[item.location] || item.location)}</strong><p>${formatDate(item.startAt)} · ${formatTime(item.startAt)}–${formatTime(item.endAt)}</p><small>${escapeText(item.reporterName || item.reporterEmail || 'Thành viên')}${item.note ? ` · ${escapeText(item.note)}` : ''}</small></div><div class="class-review-actions"><button data-review="confirm" type="button">Thông tin đúng</button><button data-review="reject" type="button">Tin giả · xóa & cảnh báo</button></div></article>`).join('') : '<div class="empty-log">Không có báo cáo chờ duyệt.</div>';
 }
 
 function initializeClassReportDefaults() {
@@ -579,27 +580,37 @@ async function createClassReport(event) {
 async function reviewClassReport(reportId, decision) {
   const report = classReports.find(item => item.id === reportId && item.status === 'pending');
   if (!report || currentProfile?.role !== 'admin') return;
-  if (decision === 'reject' && !window.confirm('Xác nhận báo cáo này là sai và ghi cảnh báo vào tài khoản người gửi?')) return;
+  if (decision === 'reject') return deleteFalseClassReport(reportId);
   try {
-    const batch = writeBatch(db);
-    batch.update(doc(db, 'classReports', reportId), {
-      status: decision === 'confirm' ? 'confirmed' : 'rejected',
+    await updateDoc(doc(db, 'classReports', reportId), {
+      status: 'confirmed',
       reviewedAt: serverTimestamp(),
       reviewedBy: currentUser.uid,
       updatedAt: serverTimestamp()
     });
-    if (decision === 'reject') {
-      batch.update(doc(db, 'users', report.reporterUid), {
-        classReportWarningCount: increment(1),
-        classReportWarning: `Báo cáo lớp học ngày ${formatDate(report.startAt)} tại ${classLocations[report.location] || report.location} không chính xác.`,
-        classReportWarnedAt: serverTimestamp(),
-        classReportWarnedBy: currentUser.uid
-      });
-    }
-    await batch.commit();
-    notify(decision === 'confirm' ? 'Đã xác nhận và công bố lịch lớp học.' : 'Đã từ chối báo cáo và cảnh báo người gửi.');
+    notify('Đã xác nhận lịch lớp học.');
   } catch (error) {
     notify(`Không thể duyệt báo cáo (${error.code || 'unknown'}).`, true);
+  }
+}
+
+async function deleteFalseClassReport(reportId) {
+  const report = classReports.find(item => item.id === reportId);
+  if (!report || currentProfile?.role !== 'admin') return;
+  if (!window.confirm('Xóa vĩnh viễn tin giả này, mở lại khu vực đặt chỗ và cảnh báo tài khoản người gửi?')) return;
+  try {
+    const batch = writeBatch(db);
+    batch.delete(doc(db, 'classReports', reportId));
+    batch.update(doc(db, 'users', report.reporterUid), {
+      classReportWarningCount: increment(1),
+      classReportWarning: `Báo cáo lớp học ngày ${formatDate(report.startAt)} tại ${classLocations[report.location] || report.location} là tin giả và đã bị xóa.`,
+      classReportWarnedAt: serverTimestamp(),
+      classReportWarnedBy: currentUser.uid
+    });
+    await batch.commit();
+    notify('Đã xóa tin giả, mở lại khu vực và cảnh báo người gửi.');
+  } catch (error) {
+    notify(`Không thể xóa báo cáo (${error.code || 'unknown'}).`, true);
   }
 }
 
@@ -687,6 +698,10 @@ $('#classReviewList').addEventListener('click', event => {
   const button = event.target.closest('[data-review]');
   const item = event.target.closest('[data-report-id]');
   if (button && item) reviewClassReport(item.dataset.reportId, button.dataset.review);
+});
+$('#classReportList').addEventListener('click', event => {
+  const button = event.target.closest('[data-delete-report]');
+  if (button) deleteFalseClassReport(button.dataset.deleteReport);
 });
 $('#bookingZonePicker').addEventListener('click', event => {
   const button = event.target.closest('[data-booking-zone]');
