@@ -8,6 +8,7 @@ const zones = { robot: 'Khu Robot & MPS', design: 'Khu thiết kế CAD', electr
 const statusLabels = { reserved: 'Đã đặt', checkedIn: 'Đang sử dụng', completed: 'Hoàn thành', cancelled: 'Đã hủy', noShow: 'Vắng mặt' };
 const NO_SHOW_LIMIT = 3;
 const classLocations = { classroom: 'Phòng học / khu vực giảng dạy', wholeLab: 'Toàn bộ phòng Lab', robot: 'Khu Robot & MPS', design: 'Khu thiết kế CAD', electronics: 'Bàn điện tử & IoT', meeting: 'Bàn họp nhóm' };
+const classSessions = { morning: { label: 'Ca sáng', start: '06:30', end: '11:30' }, afternoon: { label: 'Ca chiều', start: '12:30', end: '15:30' } };
 const LOCK_HOURS = 24;
 const CLOSING_HOUR = 22;
 const $ = selector => document.querySelector(selector);
@@ -510,31 +511,22 @@ function renderClassReports() {
 function initializeClassReportDefaults() {
   const now = new Date();
   const max = new Date(now.getTime() + 30 * 86400000);
-  const start = new Date(now);
-  start.setMinutes(start.getMinutes() < 30 ? 30 : 60, 0, 0);
-  if (start.getHours() >= 21) {
-    start.setDate(start.getDate() + 1);
-    start.setHours(8, 0, 0, 0);
-  }
-  const end = new Date(start.getTime() + 90 * 60000);
   $('#classDate').min = localDateKey(now);
   $('#classDate').max = localDateKey(max);
-  $('#classDate').value = localDateKey(start);
-  $('#classStart').value = start.toTimeString().slice(0, 5);
-  $('#classEnd').value = end.toTimeString().slice(0, 5);
+  $('#classDate').value = localDateKey(now);
 }
 
 async function createClassReport(event) {
   event.preventDefault();
   const date = $('#classDate').value;
-  const start = new Date(`${date}T${$('#classStart').value}:00`);
-  const end = new Date(`${date}T${$('#classEnd').value}:00`);
+  const session = document.querySelector('input[name="classSession"]:checked')?.value;
+  const sessionInfo = classSessions[session];
+  const start = new Date(`${date}T${sessionInfo?.start || ''}:00`);
+  const end = new Date(`${date}T${sessionInfo?.end || ''}:00`);
   const location = $('#classLocation').value;
   const note = $('#classNote').value.trim();
-  if (!classLocations[location] || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return notify('Vui lòng nhập đầy đủ thông tin lớp học.', true);
-  if (end <= start) return notify('Giờ kết thúc phải sau giờ bắt đầu.', true);
+  if (!classLocations[location] || !sessionInfo || Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return notify('Vui lòng nhập đầy đủ thông tin lớp học.', true);
   if (end <= new Date()) return notify('Thời gian lớp học đã kết thúc.', true);
-  if (start.getHours() < 7 || end > closingTime(start) || end.getTime() - start.getTime() > 8 * 3600000) return notify('Lịch lớp học phải trong khung 07:00–22:00 và không quá 8 giờ.', true);
   try {
     await addDoc(collection(db, 'classReports'), {
       reporterUid: currentUser.uid,
@@ -542,6 +534,7 @@ async function createClassReport(event) {
       reporterName: currentUser.displayName || 'Thành viên',
       reporterPhotoURL: currentUser.photoURL || '',
       location,
+      session,
       date,
       startAt: Timestamp.fromDate(start),
       endAt: Timestamp.fromDate(end),
@@ -551,6 +544,7 @@ async function createClassReport(event) {
       updatedAt: serverTimestamp()
     });
     $('#classNote').value = '';
+    $('#classReportModal').close();
     notify('Đã gửi báo cáo. Admin sẽ kiểm tra trước khi công bố.');
   } catch (error) {
     notify(error.code === 'permission-denied' ? 'Chưa có quyền gửi báo cáo. Hãy Publish file firestore.rules mới.' : `Không thể gửi báo cáo (${error.code || 'unknown'}).`, true);
@@ -656,6 +650,14 @@ $('#googleLoginBtn').addEventListener('click', async () => {
 ['#logoutBtn', '#pendingLogoutBtn'].forEach(selector => $(selector).addEventListener('click', () => signOut(auth)));
 $('#bookingForm').addEventListener('submit', createBooking);
 $('#classReportForm').addEventListener('submit', createClassReport);
+$('#openClassReportBtn').addEventListener('click', () => {
+  initializeClassReportDefaults();
+  $('#classReportModal').showModal();
+});
+$('#closeClassReportBtn').addEventListener('click', () => $('#classReportModal').close());
+$('#classReportModal').addEventListener('click', event => {
+  if (event.target === $('#classReportModal')) $('#classReportModal').close();
+});
 $('#classReviewList').addEventListener('click', event => {
   const button = event.target.closest('[data-review]');
   const item = event.target.closest('[data-report-id]');

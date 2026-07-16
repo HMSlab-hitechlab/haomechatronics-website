@@ -109,17 +109,24 @@ service cloud.firestore {
         || (approved() && (resource.data.status == 'confirmed'
           || resource.data.reporterUid == request.auth.uid));
       allow create: if approved()
-        && request.resource.data.keys().hasOnly(['reporterUid', 'reporterEmail', 'reporterName', 'reporterPhotoURL', 'location', 'date', 'startAt', 'endAt', 'note', 'status', 'createdAt', 'updatedAt'])
+        && request.resource.data.keys().hasOnly(['reporterUid', 'reporterEmail', 'reporterName', 'reporterPhotoURL', 'location', 'session', 'date', 'startAt', 'endAt', 'note', 'status', 'createdAt', 'updatedAt'])
         && request.resource.data.reporterUid == request.auth.uid
         && request.resource.data.reporterEmail == request.auth.token.email
         && request.resource.data.reporterName is string
         && request.resource.data.reporterPhotoURL is string
         && request.resource.data.status == 'pending'
         && request.resource.data.location in ['classroom', 'wholeLab', 'robot', 'design', 'electronics', 'meeting']
+        && request.resource.data.session in ['morning', 'afternoon']
         && request.resource.data.date is string
         && request.resource.data.startAt is timestamp
         && request.resource.data.endAt is timestamp
         && request.resource.data.startAt < request.resource.data.endAt
+        && (
+          (request.resource.data.session == 'morning'
+            && request.resource.data.endAt - request.resource.data.startAt == duration.value(5, 'h'))
+          || (request.resource.data.session == 'afternoon'
+            && request.resource.data.endAt - request.resource.data.startAt == duration.value(3, 'h'))
+        )
         && request.resource.data.note is string
         && request.resource.data.note.size() <= 200;
       allow update, delete: if admin();
